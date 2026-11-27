@@ -1,0 +1,9 @@
+flowchart LR
+  A["Vehicle beacon<br/>type, speed, heading,<br/>optional lat/lon,<br/>rolling ID (10 min), 4 B MAC"] -- "BLE broadcast<br/>(no pairing, no internet)" --> B["Receiver<br/>decode, verify MAC (+-1 epoch),<br/>track by rolling ID,<br/>RSSI + GPS geometry,<br/>alert level"]
+  B -- "local only" --> U["Pedestrian<br/>vibration / speech<br/>'Electric bike, fast,<br/>from your left, 3 seconds'"]
+  B -- "drop IDs, RSSI,<br/>exact positions, times" --> C["On-device counter<br/>key: grid cell (0.001 deg,<br/>about 110 m) + hour of day<br/>values: fast_passes,<br/>urgent_alerts"]
+  C -- "opt-in, batched,<br/>when online" --> D["Aggregation API<br/>accepts only 4 fields;<br/>sums per (cell, hour);<br/>hides cells with<br/>total below k = 3"]
+  D --> E["City dashboard<br/>heat map, hour filter,<br/>ranked hotspots, CSV"]
+  E --> F["City action<br/>speed calming, crossings,<br/>beacon placement"]
+  classDef priv fill:#fff2cc,stroke:#b8860b,color:#222;
+  class C,D priv;

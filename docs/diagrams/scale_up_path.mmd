@@ -1,0 +1,8 @@
+flowchart LR
+  P0["Phase 0<br/>Hackathon prototype<br/>sim + ESP32-C3 + phone app"] --> P1["Phase 1<br/>Pilot with blind associations<br/>10-50 retrofitted vehicles,<br/>one corridor"]
+  P1 --> P2["Phase 2<br/>E-bike / scooter makers<br/>flash HearMe into existing<br/>BLE controller firmware"]
+  P2 --> P3["Phase 3<br/>Fleet operators<br/>ride-hailing, delivery,<br/>tuk-tuk and bus fleets"]
+  P3 --> P4["Phase 4<br/>City procurement<br/>tenders require HearMe on<br/>public fleets + stops"]
+  P4 --> P5["Phase 5<br/>Standard / regulation<br/>assigned SIG IDs, ISO/ITU spec,<br/>AVAS-style rule for 2-3 wheelers"]
+  P2 -. "cost: firmware only<br/>if a BLE SoC is already on board" .-> P3
+  P5 -. "feedback: dashboard data,<br/>pilot results" .-> P4

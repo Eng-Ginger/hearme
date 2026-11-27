@@ -1,0 +1,26 @@
+stateDiagram-v2
+  direction LR
+  [*] --> Ignore: first packet of a rolling ID
+  Ignore --> Aware: moving and dist <= 35 m
+  Aware --> Warn: ttr <= 6 s
+  Warn --> Urgent: ttr <= 3 s, or approaching and dist <= 6 m
+  Urgent --> Warn: ttr > 4 s and not (approaching within 7 m), held 1.5 s
+  Warn --> Aware: ttr > 7 s or no conflict, held 1.5 s
+  Aware --> Ignore: dist > 40 m or parked (< 0.5 m/s), held 1.5 s
+  Active --> Ignore: no packet for 2.5 s (stale)
+  state Active {
+    direction LR
+    [*] --> any_level
+    any_level: Aware, Warn or Urgent
+  }
+  note left of Ignore
+    Upgrades may skip levels (e.g. Ignore to Urgent)
+    and fire at once with an event: vibration + speech,
+    at most once per level per track every 4 s.
+  end note
+  note right of Urgent
+    Downgrades use looser exit thresholds
+    (ttr +1 s, urgent dist +1 m, aware dist +5 m),
+    must persist 1.5 s (hold), and are silent.
+    Track forgotten after 30 s without packets.
+  end note

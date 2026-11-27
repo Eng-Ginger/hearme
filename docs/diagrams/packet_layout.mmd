@@ -1,0 +1,23 @@
+---
+title: "HearMe v1 AdvData, worst case (bus with GPS): 31 bytes, bit offsets shown"
+config:
+  packet:
+    bitsPerRow: 64
+    rowHeight: 44
+    bitWidth: 22
+---
+packet-beta
+0-7: "AD len 0x1E"
+8-15: "AD type 0xFF"
+16-31: "Company ID 0xFFFF (LE)"
+32-35: "ver=1 (hi)"
+36-39: "type=4 (lo)"
+40-71: "Rolling ID"
+72-79: "flags"
+80-87: "speed 0.1 m/s"
+88-95: "heading deg/2"
+96-127: "latitude int32 LE, 1e-7 deg (optional)"
+128-159: "longitude int32 LE, 1e-7 deg (optional)"
+160-207: "route ASCII, 6 B, NUL padded (bus only)"
+208-215: "door/ramp"
+216-247: "MAC = HMAC-SHA256(...)[0:4]"

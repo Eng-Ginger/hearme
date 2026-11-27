@@ -1,0 +1,35 @@
+flowchart LR
+  subgraph V["Vehicles: moving beacons (~$1 target)"]
+    direction TB
+    EB["E-bike / e-scooter<br/>BLE beacon, optional GPS"]
+    TT["Tuk-tuk / motorbike<br/>BLE beacon + GPS"]
+    BUS["Bus<br/>+ route, door, ramp"]
+  end
+  subgraph I["Street infrastructure: fixed beacons"]
+    direction TB
+    BS["Bus stop<br/>name + short code"]
+    CR["Crossing / school zone<br/>name + short code"]
+  end
+  subgraph P["Pedestrian receivers: work offline"]
+    direction TB
+    WB["Wristband (ESP32-C3)<br/>vibration patterns<br/>(~$3 target)"]
+    APP["Phone app (free)<br/>speech EN / AR<br/>+ vibration"]
+  end
+  subgraph C["City: optional, anonymous"]
+    direction TB
+    AGG["Aggregation service<br/>grid cell x hour counts<br/>small cells suppressed"]
+    DASH["City dashboard<br/>hotspots, fast passes,<br/>urgent alerts"]
+  end
+  V == "BLE legacy advertising<br/>every 100 ms, +10 dBm<br/>no pairing, no internet" ==> P
+  I == "BLE advertising<br/>(names, short codes)" ==> P
+  WB -. "optional pairing" .- APP
+  P -. "counts only, no IDs<br/>opt-in batched upload" .-> AGG
+  AGG --> DASH
+  classDef veh fill:#fde2c8,stroke:#c0621b,color:#222;
+  classDef inf fill:#d9ead3,stroke:#4a7a3a,color:#222;
+  classDef rx fill:#cfe2f3,stroke:#2d6aa3,color:#222;
+  classDef city fill:#eadcf5,stroke:#6b3fa0,color:#222;
+  class EB,TT,BUS veh;
+  class BS,CR inf;
+  class WB,APP rx;
+  class AGG,DASH city;
