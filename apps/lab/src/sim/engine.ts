@@ -223,9 +223,13 @@ export class Engine {
       }
     } else if (v.phase === "leaving") {
       v.braking = false;
-      v.v = Math.min(s.speed, v.v + 1.0 * h);
+      v.v = Math.min(s.speed, v.v + 1.4 * (1 - (v.v / s.speed) ** 2) * h + 0.05 * h);   // eases into cruise speed
     }
     v.x += v.dir * v.v * h;
+    // slight lane wobble for two-wheelers (true position, so radio and geometry see it too)
+    if (v.type === "e_bike" || v.type === "e_scooter" || v.type === "motorcycle") {
+      v.z = (s.z ?? laneZ(v.dir)) + 0.12 * Math.sin(2 * Math.PI * 0.33 * this.t + v.uid * 1.7) * Math.min(1, v.v / 4);
+    }
   }
 
   private sourceLevel(v: VehicleInst): number {

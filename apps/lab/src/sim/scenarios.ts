@@ -43,15 +43,15 @@ export interface Scenario {
 export const INFRA: InfraSpec[] = [
   { type: "crossing", x: 0, z: 5.6, name: "School Xing", shortCode: 7 },
   { type: "bus_stop", x: STOP_X, z: 5.8, name: "Al Jurf Stop", shortCode: 101 },
-  { type: "school_zone", x: -14, z: -7, name: "Nuaimiya Sch", shortCode: 3 },
+  { type: "school_zone", x: -14, z: -9, name: "Campus Gate", shortCode: 3 },
 ];
 
 export const laneZ = (dir: 1 | -1) => (dir === 1 ? 1.75 : -1.75);
 
 export const SCENARIOS: Scenario[] = [
   {
-    id: "school", name: "School crossing", night: false, period: 40, ambientDb: 60,
-    blurb: "Zebra crossing without signals next to a school gate. Silent e-bikes mixed with ordinary traffic.",
+    id: "school", name: "Campus gate crossing", night: false, period: 40, ambientDb: 60,
+    blurb: "Unsignalised zebra crossing at a university campus gate in Ajman. Silent e-bikes mixed with ordinary traffic.",
     ped: { x: CROSSING_X, z: KERB_Z, yaw: 0 },
     vehicles: [
       { key: "ebike1", type: "e_bike", beacon: true, dir: 1, speed: 7.2, spawn: 1, z: 2.5, color: "#e8432e" },

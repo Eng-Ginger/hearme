@@ -61,7 +61,7 @@ export async function startDirector() {
 
     // 1. Sighted street
     store.set({ titleCard: "none" });
-    caption("An Ajman side street, late afternoon. A zebra crossing with no signals, next to a school.");
+    caption("A street outside a university campus in Ajman, late afternoon. A zebra crossing with no signals at the gate.");
     camCtl.speed = 0.22; camCtl.target = 35;
     engine.spawn({ key: "director-moto", type: "motorcycle", beacon: false, dir: -1, speed: 11, spawn: 0, startX: 95 });
     await wait(2.5);

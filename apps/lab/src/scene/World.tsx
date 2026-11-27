@@ -1,8 +1,9 @@
 // Scene graph: lighting, sky, street, vehicles, first-person camera, and the per-frame loop
 // that advances the engine and keeps the 3D audio in sync.
-import { useEffect, useMemo, useReducer, useRef } from "react";
+import { Suspense, useEffect, useReducer, useRef } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
-import { Sky } from "@react-three/drei";
+import { Environment } from "@react-three/drei";
+import { Students } from "./Students";
 import * as THREE from "three";
 import { engine, type VehicleInst } from "../sim/engine";
 import { SILENT } from "../sim/scenarios";
@@ -14,13 +15,23 @@ import { camCtl } from "./cameraControl";
 
 function VehicleView({ v, night }: { v: VehicleInst; night: boolean }) {
   const ref = useRef<THREE.Group>(null);
-  const wobble = useMemo(() => Math.random() * 10, []);
-  useFrame((st) => {
+  const wheels = useRef<THREE.Object3D[] | null>(null);
+  const lastZ = useRef(v.z);
+  const lean = useRef(0);
+  useFrame((_, dt) => {
     const g = ref.current;
     if (!g) return;
+    if (!wheels.current) { const w: THREE.Object3D[] = []; g.traverse((o) => { if (o.name === "wheel") w.push(o); }); wheels.current = w; }
+    for (const w of wheels.current) w.rotation.z -= (v.v * dt) / (w.userData.r as number);   // rolls at v / r
     g.position.set(v.x, 0, v.z);
     g.rotation.y = v.dir === 1 ? 0 : Math.PI;
-    if (v.type === "e_bike" || v.type === "e_scooter" || v.type === "motorcycle") g.rotation.x = Math.sin(st.clock.elapsedTime * 1.3 + wobble) * 0.02;
+    if (v.type === "e_bike" || v.type === "e_scooter" || v.type === "motorcycle") {
+      // lean into the lateral motion of the lane wobble (roll ~ lateral speed change)
+      const lat = dt > 0 ? (v.z - lastZ.current) / dt : 0;
+      lean.current += (THREE.MathUtils.clamp(-lat * 0.35 * v.dir, -0.12, 0.12) - lean.current) * Math.min(1, dt * 4);
+      g.rotation.x = lean.current;
+    }
+    lastZ.current = v.z;
   });
   const color = v.spec.color;
   return (
@@ -60,15 +71,27 @@ function FirstPerson() {
     el.addEventListener("pointerdown", pd); el.addEventListener("pointermove", pm); window.addEventListener("pointerup", pu);
     return () => { el.removeEventListener("pointerdown", pd); el.removeEventListener("pointermove", pm); window.removeEventListener("pointerup", pu); };
   }, [gl]);
+  const smooth = useRef({ x: engine.ped.x, z: engine.ped.z, phase: 0, t: 0 });
   useFrame((_, dt) => {
     if (camCtl.target !== null) camCtl.yaw += (camCtl.target - camCtl.yaw) * Math.min(1, dt * camCtl.speed);
+    // arrow keys: walk along the kerb at 1.3 m/s (the receiver pose follows)
+    if (camCtl.walk !== 0 && !store.get().director) engine.ped.x += camCtl.walk * 1.3 * Math.min(dt, 0.1);
     // yaw: compass degrees, 0 = north (-z)
     let yaw = ((camCtl.yaw % 360) + 540) % 360 - 180;
     camCtl.yaw = yaw;
-    const p = engine.ped;
-    camera.position.set(p.x, 1.6, p.z);
+    const p = engine.ped, sm = smooth.current;
+    sm.t += dt;
+    const dx = p.x - sm.x, dz = p.z - sm.z, dist = Math.hypot(dx, dz);
+    if (dist > 15) { sm.x = p.x; sm.z = p.z; }                       // scene change: cut
+    else { const step = Math.min(dist, 1.4 * dt); if (dist > 1e-4) { sm.x += (dx / dist) * step; sm.z += (dz / dist) * step; } }
+    const walking = dist > 0.02 || camCtl.walk !== 0;
+    if (walking) sm.phase += dt * 2 * Math.PI * 1.85;                 // ~1.85 steps/s
+    const bob = walking ? Math.abs(Math.sin(sm.phase)) * 0.045 - 0.02 : Math.sin(sm.t * 1.6) * 0.004;   // step bob / breathing
+    const sway = walking ? Math.sin(sm.phase * 0.5) * 0.025 : Math.sin(sm.t * 0.37) * 0.012;           // weight shift
+    const yr0 = THREE.MathUtils.degToRad(camCtl.yaw);
+    camera.position.set(sm.x + Math.cos(yr0) * sway, 1.6 + bob, sm.z + Math.sin(yr0) * sway);
     const yr = THREE.MathUtils.degToRad(yaw), pr = THREE.MathUtils.degToRad(camCtl.pitch);
-    camera.lookAt(p.x + Math.sin(yr) * Math.cos(pr), 1.6 + Math.sin(pr), p.z - Math.cos(yr) * Math.cos(pr));
+    camera.lookAt(camera.position.x + Math.sin(yr) * Math.cos(pr), camera.position.y + Math.sin(pr), camera.position.z - Math.cos(yr) * Math.cos(pr));
     yaw = (yaw + 360) % 360;
     engine.ped.yaw = yaw;
   });
@@ -101,29 +124,38 @@ function Loop() {
 
 export function World() {
   const night = useUI((s) => s.scenarioId === "night");
-  const { scene } = useThree();
+  const quality = useUI((s) => s.quality);
+  const { scene, gl } = useThree();
   useEffect(() => {
-    scene.fog = new THREE.Fog(night ? "#0b1020" : "#e9c9a0", night ? 25 : 70, night ? 140 : 260);
-    scene.background = night ? new THREE.Color("#070b18") : null;
-  }, [night, scene]);
-  // warm late-afternoon sun from the west, low elevation
-  const sunPos: [number, number, number] = [-80, 22, 30];
+    scene.fog = new THREE.Fog(night ? "#0b1020" : "#e7cfae", night ? 25 : 90, night ? 150 : 340);   // warm distant haze
+    gl.toneMapping = THREE.ACESFilmicToneMapping;
+    gl.toneMappingExposure = night ? 0.55 : 0.95;
+  }, [night, scene, gl]);
+  // low late-afternoon sun from the south-west
+  const sunPos: [number, number, number] = [-70, 26, 45];
+  const hdri = night ? "/assets/polyhaven/qwantani_dusk_2_puresky_1k.hdr"
+    : quality === "high" ? "/assets/polyhaven/qwantani_late_afternoon_puresky_2k.hdr" : "/assets/polyhaven/qwantani_late_afternoon_puresky_1k.hdr";
+  const shadowSize = quality === "high" ? 4096 : 1024;
   return (
     <>
-      {!night && <Sky sunPosition={sunPos} turbidity={7} rayleigh={1.6} mieCoefficient={0.006} mieDirectionalG={0.85} distance={4000} />}
-      <hemisphereLight args={[night ? "#28324d" : "#ffe2bf", night ? "#0d0f14" : "#7a6248", night ? 0.09 : 0.75]} />
-      <ambientLight intensity={night ? 0.03 : 0.18} />
+      <Suspense fallback={null}>
+        <Environment files={hdri} background environmentIntensity={night ? 0.12 : 0.55} backgroundIntensity={night ? 0.25 : 1} />
+      </Suspense>
+      <hemisphereLight args={[night ? "#28324d" : "#ffe6c7", night ? "#0d0f14" : "#8a7356", night ? 0.08 : 0.25]} />
       <directionalLight
+        key={shadowSize}
         position={night ? [30, 40, -20] : sunPos}
-        intensity={night ? 0.06 : 2.4}
-        color={night ? "#8fa3d6" : "#ffc58a"}
+        intensity={night ? 0.05 : 2.6}
+        color={night ? "#8fa3d6" : "#ffcf98"}
         castShadow
-        shadow-mapSize={[2048, 2048]}
-        shadow-camera-left={-45} shadow-camera-right={45} shadow-camera-top={30} shadow-camera-bottom={-30}
-        shadow-camera-near={1} shadow-camera-far={200} shadow-bias={-0.0004}
+        shadow-mapSize={[shadowSize, shadowSize]}
+        shadow-radius={quality === "high" ? 6 : 3}
+        shadow-camera-left={-50} shadow-camera-right={50} shadow-camera-top={40} shadow-camera-bottom={-40}
+        shadow-camera-near={1} shadow-camera-far={220} shadow-bias={-0.0004} shadow-normalBias={0.02}
       />
-      <Street night={night} />
+      <Suspense fallback={null}><Street night={night} /></Suspense>
       <Vehicles night={night} />
+      <Students count={quality === "high" ? 8 : 4} />
       <FirstPerson />
       <Loop />
     </>

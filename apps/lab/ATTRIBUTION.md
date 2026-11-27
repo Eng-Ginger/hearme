@@ -17,9 +17,37 @@ No audio files are used. Every sound in the HearMe Lab is synthesised at runtime
 
 Speech uses the browser's Web Speech API voices (installed on the user's operating system).
 
-## 3D models and textures
-All models are built from three.js primitives in `src/scene/`. Sign and ground textures are drawn at
-runtime on a `<canvas>` (`src/scene/textures.ts`). No external images or fonts are downloaded.
+## Reference photos (not shipped in the scene; used only as modelling reference)
+The campus street is modelled after these photos of a university campus in Ajman, UAE. No university
+name or logo is used anywhere in the Lab.
+
+| File | Author | Licence | Source |
+|---|---|---|---|
+| `reference/ajman_uni/SAA1.jpg` | Therealmau | CC BY-SA 4.0 | https://commons.wikimedia.org/wiki/File:SAA1.jpg |
+| `reference/ajman_uni/SAA2.jpg` | Therealmau | CC BY-SA 4.0 | https://commons.wikimedia.org/wiki/File:SAA2.jpg |
+| `reference/ajman_uni/SAA3.jpg` | Therealmau | CC BY-SA 4.0 | https://commons.wikimedia.org/wiki/File:SAA3.jpg |
+| `reference/ajman_uni/SAA4.jpg` | Therealmau | CC BY-SA 4.0 | https://commons.wikimedia.org/wiki/File:SAA4.jpg |
+| `reference/ajman_uni/SAA5.jpg` | Therealmau | CC BY-SA 4.0 | https://commons.wikimedia.org/wiki/File:SAA5.jpg |
+| `reference/ajman_uni/SAAU1.jpg` | Therealmau | CC BY-SA 4.0 | https://commons.wikimedia.org/wiki/File:SAAU1.jpg |
+
+CC BY-SA 4.0: https://creativecommons.org/licenses/by-sa/4.0/ — the derived 3D scene is offered under the same licence terms
+for anything derived from these photos.
+
+## HDRIs and PBR textures (all CC0)
+
+| Asset | Author | Licence | Source |
+|---|---|---|---|
+| `public/assets/polyhaven/` asphalt_02 (diffuse_1k, nor_gl_1k, rough_1k) | Poly Haven | CC0 1.0 | https://polyhaven.com/a/asphalt_02 |
+| `public/assets/polyhaven/` clay_plaster (diffuse_1k, nor_gl_1k, rough_1k) | Poly Haven | CC0 1.0 | https://polyhaven.com/a/clay_plaster |
+| `public/assets/polyhaven/` coast_sand_01 (diffuse_1k, nor_gl_1k, rough_1k) | Poly Haven | CC0 1.0 | https://polyhaven.com/a/coast_sand_01 |
+| `public/assets/polyhaven/` concrete_pavement (diffuse_1k, nor_gl_1k, rough_1k) | Poly Haven | CC0 1.0 | https://polyhaven.com/a/concrete_pavement |
+| `public/assets/polyhaven/` qwantani_dusk_2_puresky (1k) | Poly Haven | CC0 1.0 | https://polyhaven.com/a/qwantani_dusk_2_puresky |
+| `public/assets/polyhaven/` qwantani_late_afternoon_puresky (1k, 2k) | Poly Haven | CC0 1.0 | https://polyhaven.com/a/qwantani_late_afternoon_puresky |
+
+## 3D models
+All vehicles, people, buildings, palms and street furniture are built from three.js primitives in
+`src/scene/` (Street.tsx, Models.tsx, Students.tsx). Sign textures are drawn at runtime on a `<canvas>`.
+No third-party models or fonts are used. (Kenney / Quaternius CC0 models were not needed.)
 
 ## Libraries
 three.js (MIT), @react-three/fiber and @react-three/drei (MIT), React (MIT), Vite (MIT), Playwright (Apache-2.0).

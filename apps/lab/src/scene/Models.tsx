@@ -5,11 +5,13 @@ import type { GroupProps } from "@react-three/fiber";
 import { signTexture } from "./textures";
 
 const Wheel = ({ x, r, w = 0.08, y, z = 0 }: { x: number; r: number; w?: number; y?: number; z?: number }) => (
-  <mesh position={[x, y ?? r, z]} rotation={[Math.PI / 2, 0, 0]} castShadow>
-    <torusGeometry args={[r * 0.8, r * 0.22, 6, 14]} />
-    <meshStandardMaterial color="#1b1b1b" roughness={0.8} />
-    <mesh scale={[1, 1, 1]}><cylinderGeometry args={[r * 0.6, r * 0.6, w, 10]} /><meshStandardMaterial color="#9aa0a6" metalness={0.6} roughness={0.4} /></mesh>
-  </mesh>
+  // name/userData let VehicleView spin every wheel at v / r
+  <group position={[x, y ?? r, z]} name="wheel" userData={{ r }}>
+    <mesh castShadow><torusGeometry args={[r * 0.8, r * 0.22, 8, 20]} /><meshStandardMaterial color="#1b1b1b" roughness={0.85} /></mesh>
+    <mesh rotation={[Math.PI / 2, 0, 0]}><cylinderGeometry args={[r * 0.6, r * 0.6, w, 14]} /><meshStandardMaterial color="#9aa0a6" metalness={0.6} roughness={0.4} /></mesh>
+    <mesh><boxGeometry args={[r * 1.2, r * 0.09, w * 1.1]} /><meshStandardMaterial color="#2a2d31" metalness={0.4} /></mesh>
+    <mesh rotation={[0, 0, Math.PI / 2]}><boxGeometry args={[r * 1.2, r * 0.09, w * 1.1]} /><meshStandardMaterial color="#2a2d31" metalness={0.4} /></mesh>
+  </group>
 );
 
 function Rider({ x = 0, y = 0.9, lean = 0.3, shirt = "#2d6cdf", helmet = "#f2f2f2", standing = false }: { x?: number; y?: number; lean?: number; shirt?: string; helmet?: string; standing?: boolean }) {

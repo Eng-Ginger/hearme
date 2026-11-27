@@ -3,57 +3,57 @@
   "checkpoints": [
     {
       "name": "intro",
-      "wallS": 0.835,
+      "wallS": 0.722,
       "simT": 0,
       "caption": "",
       "spoken": ""
     },
     {
       "name": "sighted-street",
-      "wallS": 11.718,
-      "simT": 9.27,
+      "wallS": 12.253,
+      "simT": 9.25,
       "caption": "Petrol motorbikes and cars announce themselves. You hear them coming.",
       "spoken": ""
     },
     {
       "name": "blind-off",
-      "wallS": 18.522,
-      "simT": 17.32,
+      "wallS": 18.869,
+      "simT": 17.27,
       "caption": "HearMe is OFF. Listen.",
       "spoken": ""
     },
     {
       "name": "heard-nothing",
-      "wallS": 30.172,
-      "simT": 29.32,
-      "caption": "You heard nothing. An electric bike just passed 2.1 m in front of you at 26 km/h.",
+      "wallS": 30.518,
+      "simT": 29.27,
+      "caption": "You heard nothing. An electric bike just passed 2.0 m in front of you at 26 km/h.",
       "spoken": ""
     },
     {
       "name": "hearme-on-alert",
-      "wallS": 43.924,
-      "simT": 43.02,
+      "wallS": 40.808,
+      "simT": 39.49,
       "caption": "",
-      "spoken": "Electric bike, fast, from your left, 6 seconds"
+      "spoken": "Electric bike, fast, from your left, 9 seconds"
     },
     {
       "name": "warned-caption",
-      "wallS": 50.377,
-      "simT": 49.51,
-      "caption": "HearMe warned you 5.7 s before it passed, from your left. No internet. Nothing installed on the road.",
-      "spoken": "Stop! Electric bike, fast, from your left, 3 seconds"
+      "wallS": 50.693,
+      "simT": 49.44,
+      "caption": "HearMe warned you 9.1 s before it passed, from your left. No internet. Nothing installed on the road.",
+      "spoken": "Stop! Electric bike, fast, from your left, 4 seconds"
     },
     {
       "name": "bus-arriving",
-      "wallS": 66.259,
-      "simT": 65.4,
+      "wallS": 66.558,
+      "simT": 65.3,
       "caption": "",
       "spoken": "Bus 12 arriving, front door on your left"
     },
     {
       "name": "outro",
-      "wallS": 85.997,
-      "simT": 85.08,
+      "wallS": 86.41,
+      "simT": 85.1,
       "caption": "",
       "spoken": "Bus 12 arriving, front door on your left"
     }
@@ -61,7 +61,8 @@
   "fps": {
     "director": 60.3,
     "freeplay": 60.3,
-    "night": 60.3
+    "night": 60.3,
+    "delivery": 60.3
   },
   "errors": [],
   "directorCompleted": true,
@@ -73,39 +74,39 @@
       "muted": true
     },
     {
-      "t": 2.07,
+      "t": 2.05,
       "kind": "place",
-      "text": "School zone: Nuaimiya Sch",
+      "text": "School zone: Campus Gate",
       "muted": true
     },
     {
-      "t": 22.72,
+      "t": 19.22,
       "kind": "vehicle_warn",
-      "text": "Electric bike, fast, from your left, 6 seconds",
+      "text": "Electric bike, fast, from your left, 9 seconds",
       "muted": true
     },
     {
-      "t": 25.43,
+      "t": 24.05,
       "kind": "vehicle_urgent",
-      "text": "Stop! Electric bike, fast, from your left, 3 seconds",
+      "text": "Stop! Electric bike, fast, from your left, 4 seconds",
       "muted": true
     },
     {
-      "t": 34.88,
+      "t": 34.79,
       "kind": "place",
       "text": "Crossing: School Xing",
       "muted": false
     },
     {
-      "t": 42.87,
+      "t": 39.37,
       "kind": "vehicle_warn",
-      "text": "Electric bike, fast, from your left, 6 seconds",
+      "text": "Electric bike, fast, from your left, 9 seconds",
       "muted": false
     },
     {
-      "t": 45.58,
+      "t": 44.2,
       "kind": "vehicle_urgent",
-      "text": "Stop! Electric bike, fast, from your left, 3 seconds",
+      "text": "Stop! Electric bike, fast, from your left, 4 seconds",
       "muted": false
     },
     {
@@ -115,13 +116,13 @@
       "muted": false
     },
     {
-      "t": 62.01,
-      "kind": "vehicle_aware",
-      "text": "Bus nearby, from your left",
+      "t": 59.59,
+      "kind": "vehicle_warn",
+      "text": "Bus, fast, from your left, 9 seconds",
       "muted": false
     },
     {
-      "t": 65.28,
+      "t": 65.29,
       "kind": "bus_arriving",
       "text": "Bus 12 arriving, front door on your left",
       "muted": false
@@ -130,40 +131,40 @@
   "passes": [
     {
       "key": "director-moto",
-      "t": 12.17,
-      "passDist": 6.35,
+      "t": 12.15,
+      "passDist": 6.23,
       "kmh": 39.6,
       "leadWarn": null,
-      "leadAudible": 2.000000000000009,
+      "leadAudible": 2.0331000000014896,
       "mode": "off"
     },
     {
       "key": "director-car",
-      "t": 16.03,
+      "t": 16,
       "passDist": 2.85,
       "kmh": 36,
       "leadWarn": null,
-      "leadAudible": 0.016899999998511106,
+      "leadAudible": 0,
       "mode": "off"
     },
     {
       "key": "director-ebike",
-      "t": 28.38,
-      "passDist": 2.1,
+      "t": 28.35,
+      "passDist": 2,
       "kmh": 25.9,
-      "leadWarn": 5.6661999999991615,
+      "leadWarn": 9.13259999999768,
       "leadAudible": null,
       "mode": "off"
     },
     {
       "key": "director-ebike",
-      "t": 48.53,
-      "passDist": 2.1,
+      "t": 48.5,
+      "passDist": 2.04,
       "kmh": 25.9,
-      "leadWarn": 5.66590000000231,
+      "leadWarn": 9.133100000001626,
       "leadAudible": null,
       "mode": "on"
     }
   ],
-  "directorWallS": 85.999
+  "directorWallS": 86.412
 }

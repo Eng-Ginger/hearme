@@ -1,0 +1,10 @@
+HearMe — video credits (assets under CC BY / CC BY-SA; CC0 assets need no credit but are listed in apps/lab/ATTRIBUTION.md)
+
+Reference photo "SAA1.jpg" by Therealmau, CC BY-SA 4.0, https://commons.wikimedia.org/wiki/File:SAA1.jpg
+Reference photo "SAA2.jpg" by Therealmau, CC BY-SA 4.0, https://commons.wikimedia.org/wiki/File:SAA2.jpg
+Reference photo "SAA3.jpg" by Therealmau, CC BY-SA 4.0, https://commons.wikimedia.org/wiki/File:SAA3.jpg
+Reference photo "SAA4.jpg" by Therealmau, CC BY-SA 4.0, https://commons.wikimedia.org/wiki/File:SAA4.jpg
+Reference photo "SAA5.jpg" by Therealmau, CC BY-SA 4.0, https://commons.wikimedia.org/wiki/File:SAA5.jpg
+Reference photo "SAAU1.jpg" by Therealmau, CC BY-SA 4.0, https://commons.wikimedia.org/wiki/File:SAAU1.jpg
+
+HDRIs and textures: Poly Haven (CC0). Sounds: synthesised. 3D models: built by the team.
