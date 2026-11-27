@@ -53,6 +53,9 @@ export type LabEvent =
   | { kind: "roster" }
   | { kind: "reset" };
 
+/** Lab receiver overrides: announce stops/crossings only when within ~8 m (RSSI estimate), so a stop
+ *  26 m away is not announced from the crossing because of shadowing (docs/limitations.md #7). */
+export const LAB_RECEIVER_CONFIG = { infra_announce_dist_m: 8 };
 const enc = new TextEncoder();
 const RADIO_CHANNEL = "hearme-radio";
 const SUBSTEP = 0.02;
@@ -114,7 +117,7 @@ export class Engine {
   }
 
   resetReceiver() {
-    this.receiver = new Receiver({ fleet_key: TEST_FLEET_KEY, use_position: this.receiverMode === "gps" });
+    this.receiver = new Receiver({ fleet_key: TEST_FLEET_KEY, use_position: this.receiverMode === "gps", ...LAB_RECEIVER_CONFIG });
     this.ridToUid.clear();
     for (const v of this.vehicles) { v.firstWarnT = null; this.ridToUid.set(v.rid, v.uid); }
     this.post({ k: "reset", receiverMode: this.receiverMode });

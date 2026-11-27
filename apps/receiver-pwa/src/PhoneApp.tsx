@@ -30,7 +30,7 @@ export function PhoneApp({ embedded = false, speakDefault = true, initialLang = 
   const [pkts, setPkts] = useState(0);
   const [live, setLive] = useState(false);
   const [flash, setFlash] = useState(0);
-  const rx = useRef(new Receiver({ fleet_key: TEST_FLEET_KEY }));
+  const rx = useRef(new Receiver({ fleet_key: TEST_FLEET_KEY, infra_announce_dist_m: 8 }));
   const st = useRef({ listening, lang, speak });
   st.current = { listening, lang, speak };
 
@@ -42,7 +42,7 @@ export function PhoneApp({ embedded = false, speakDefault = true, initialLang = 
     bc.onmessage = (m: MessageEvent) => {
       const d = m.data;
       lastSeen = performance.now();
-      if (d.k === "reset") { rx.current = new Receiver({ fleet_key: TEST_FLEET_KEY, use_position: d.receiverMode !== "rssi" }); return; }
+      if (d.k === "reset") { rx.current = new Receiver({ fleet_key: TEST_FLEET_KEY, infra_announce_dist_m: 8, use_position: d.receiverMode !== "rssi" }); return; }
       if (d.k === "pose") { rx.current.setPose(d.lat, d.lon, d.heading); return; }
       if (d.k === "tick") { rx.current.tick(d.t); return; }
       if (d.k !== "pkt" || !st.current.listening) return;
