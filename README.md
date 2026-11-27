@@ -110,23 +110,25 @@ it passed"*.
 
 ## Key simulation results (simulated, not measured)
 
-A Monte Carlo of a blind pedestrian at an unsignalised two-lane zebra crossing with random e-bike traffic
-(200 riders/h, riders assumed **not** to yield, phone in pocket). 2,000 attempts per condition, seed
-20270101. Full method, parameters with sources, sweeps and caveats: [`docs/results/results.md`](docs/results/results.md).
+Monte Carlo of a blind pedestrian at an unsignalised two-lane zebra crossing with random e-bike traffic
+(200 riders/h, riders assumed **not** to yield, phone in pocket), 2,000 attempts per condition, seed
+20270101. Receiver v1.1 (crossing-aware warning, GPS-uncertainty pass radius, warn hold) vs v1, same
+seed and N. Full tables: [`docs/results/results.md`](docs/results/results.md),
+[`docs/results/comparison_v1_v2.md`](docs/results/comparison_v1_v2.md).
 
-| Condition | Median warning lead | Warned ≥ 3 s ahead | Conflicts per 1,000 crossings (95% CI) | False alarms per attempt | Mean wait at kerb |
+| Condition | Warned ≥ 3 s | Continuous ≥ 3 s | Conflicts per 1,000 (95% CI) | False alarms / attempt | Mean wait |
 |---|---|---|---|---|---|
-| No warning (tyre noise only) | 0.0 s | 0.0% | 193.0 (176.3–210.9) | 0.000 | 2.5 s |
-| AVAS-style speaker on the bike | 0.0 s | 0.0% | 193.0 (176.3–210.9) | 0.000 | 2.5 s |
-| HearMe, RSSI only | 10.4 s | 99.8% | 74.5 (63.8–86.8) | 11.875 | 37.1 s |
-| **HearMe with GPS** | **5.7 s** | **94.0%** | **22.0 (16.4–29.4)** | **0.004** | **4.9 s** |
+| No warning (tyre noise only) | 0.0% | 0.0% | 193.0 (176.3–210.9) | 0.000 | 2.5 s |
+| AVAS-style speaker | 0.0% | 0.0% | 193.0 (176.3–210.9) | 0.000 | 2.5 s |
+| HearMe with GPS, receiver v1 | 94.0% | 79.0% | 22.0 (16.4–29.4) | 0.004 | 4.9 s |
+| **HearMe with GPS, receiver v1.1** | **99.6%** | **98.9%** | **0.0 (0.0–1.9)** | **0.036** | **7.9 s** |
+| HearMe RSSI-only, receiver v1.1 | 99.9% | 93.5% | 86.0 (74.5–99.1) | 16.311 | 50.1 s |
 
-What the numbers say, and their limits:
-
-- **Conflicts:** HearMe with GPS cut simulated conflicts (a rider within 2 m while the pedestrian is on the road) from 193 to 22 per 1,000 crossings. That is an 89% reduction, with almost no false alarms and a short wait.
-- **RSSI-only mode:** it warns early but cries wolf, with about 12 false alarms per attempt. This is mostly riders on a parallel street, which RSSI alone can't tell apart. Pedestrians then wait so long that 14.9% gave up and crossed anyway. Its "lead time" is inflated by noisy early warnings; measured as continuous warning, the two modes are close.
-- **Audio baselines:** with the assumed sound levels, neither tyre noise (48 dB(A) at 2 m) nor a 56 dB(A) AVAS speaker is detected against 55–70 dB(A) street noise in time. This rests on assumed values. The background-noise sweep shows AVAS works only in a very quiet street (35 dB(A)).
-- **Robustness:** HearMe with GPS stays at 93–95% "warned ≥ 3 s" from 0 to 60% packet loss and from 0 to 20 dB body blocking.
+- With GPS, v1.1 had no conflicts in 2,000 simulated crossings (v1: 44) and far-lane riders now get a
+  continuous warning in 98.1% of cases (v1: 67.4%), at the cost of 3 s more waiting at the kerb.
+- RSSI-only mode remains unusable as a crossing aid: many false alarms, long waits and give-ups.
+- Audio: an AVAS speaker warns in time only in a very quiet street (35 dB(A)); from 40 dB(A) up, and in
+  normal traffic noise, it fails (`docs/results/audio_background_noise.png`). These rest on assumed sound levels.
 
 ## Honest status
 

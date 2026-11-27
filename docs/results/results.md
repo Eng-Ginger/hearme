@@ -1,7 +1,7 @@
 # HearMe Monte Carlo — simulated results
 
 > **SIMULATED.** Every number on this page comes from `sim/montecarlo.py` (base seed 20270101,
-> 79400 simulated crossing attempts in total, 302.7 s on 19 worker processes).
+> 79400 simulated crossing attempts in total, 416.1 s on 19 worker processes).
 > Nothing here is field data. Raw numbers: [`results.json`](results.json).
 
 ## 1. What was simulated
@@ -100,9 +100,9 @@ Physical parameters come from `sim/params.py`, scenario parameters from `sim/mc_
 |---|---|---|---|---|---|---|---|---|
 | No warning (tyre noise only) | 2000 | 0.00 | 0.00 | 0.0 % (0.0–0.2) | 0.0 % (0.0–0.2) | 193.0 (176.3–210.9) | 0.000 (0.000–0.000) | 2.5 |
 | AVAS speaker on e-bike | 2000 | 0.00 | 0.00 | 0.0 % (0.0–0.2) | 0.0 % (0.0–0.2) | 193.0 (176.3–210.9) | 0.000 (0.000–0.000) | 2.5 |
-| HearMe RSSI-only | 2000 | 10.36 | 10.73 | 99.8 % (99.4–99.9) | 87.8 % (86.2–89.1) | 74.5 (63.8–86.8) | 11.875 (11.284–12.466) | 37.1 |
-| HearMe with GPS | 2000 | 5.70 | 5.41 | 94.0 % (92.9–95.0) | 79.0 % (77.2–80.8) | 22.0 (16.4–29.4) | 0.004 (0.001–0.006) | 4.9 |
-| HearMe GPS, exact phone position | 1000 | 5.77 | 5.55 | 96.5 % (95.2–97.5) | 83.2 % (80.8–85.4) | 14.0 (8.4–23.4) | 0.000 (0.000–0.000) | 5.1 |
+| HearMe RSSI-only | 2000 | 11.45 | 11.80 | 99.9 % (99.6–100.0) | 93.5 % (92.3–94.5) | 86.0 (74.5–99.1) | 16.311 (15.616–17.007) | 50.1 |
+| HearMe with GPS | 2000 | 8.61 | 8.46 | 99.6 % (99.1–99.8) | 98.9 % (98.3–99.3) | 0.0 (0.0–1.9) | 0.036 (0.027–0.045) | 7.9 |
+| HearMe GPS, exact phone position | 1000 | 8.64 | 8.51 | 99.7 % (99.1–99.9) | 99.7 % (99.1–99.9) | 0.0 (0.0–3.8) | 0.022 (0.012–0.032) | 7.8 |
 
 Additional numbers:
 
@@ -110,9 +110,9 @@ Additional numbers:
 |---|---|---|---|---|---|---|---|---|
 | No warning (tyre noise only) | 0.00 / 0.00 | 0.0 % | 942, 0.0 % | 0.0 % | 0.00 | 0.000 | 0.0 % | 0 / 1035 (0.0 %) |
 | AVAS speaker on e-bike | 0.00 / 0.00 | 0.0 % | 942, 0.0 % | 0.0 % | 0.00 | 0.000 | 0.0 % | 0 / 1035 (0.0 %) |
-| HearMe RSSI-only | 6.24 / 15.83 | 100.0 % | 1489, 99.9 % | 75.5 % | 40.90 | 2.297 | 14.9 % | 3486 / 3486 (100.0 %) |
-| HearMe with GPS | 4.12 / 6.58 | 97.3 % | 956, 94.4 % | 0.3 % | 4.40 | 0.218 | 0.0 % | 910 / 941 (96.7 %) |
-| HearMe GPS, exact phone position | 4.56 / 6.45 | 98.6 % | 490, 96.1 % | 0.0 % | 4.47 | 0.206 | 0.0 % | 464 / 478 (97.1 %) |
+| HearMe RSSI-only | 7.34 / 16.77 | 100.0 % | 1589, 99.9 % | 80.2 % | 54.89 | 2.041 | 31.0 % | 4196 / 4196 (100.0 %) |
+| HearMe with GPS | 7.26 / 9.59 | 99.8 % | 1087, 99.5 % | 3.1 % | 5.27 | 0.186 | 0.0 % | 1129 / 1133 (99.6 %) |
+| HearMe GPS, exact phone position | 7.49 / 9.41 | 100.0 % | 542, 100.0 % | 2.1 % | 5.17 | 0.172 | 0.0 % | 563 / 563 (100.0 %) |
 
 Where the conflicts come from (counts of attempts with a conflict, main run):
 
@@ -120,9 +120,9 @@ Where the conflicts come from (counts of attempts with a conflict, main run):
 |---|---|---|---|---|---|---|---|
 | No warning (tyre noise only) | 386 | 294 | 176 | 0 | 0 | 0 | 4.2 |
 | AVAS speaker on e-bike | 386 | 294 | 176 | 0 | 0 | 0 | 4.2 |
-| HearMe RSSI-only | 149 | 16 | 56 | 37 | 145 | 90 | 4.6 |
-| HearMe with GPS | 44 | 24 | 14 | 18 | 14 | 0 | 5.2 |
-| HearMe GPS, exact phone position | 14 | 8 | 4 | 6 | 6 | 0 | 4.5 |
+| HearMe RSSI-only | 172 | 5 | 70 | 12 | 168 | 164 | 3.7 |
+| HearMe with GPS | 0 | 0 | 0 | 0 | 0 | 0 | – |
+| HearMe GPS, exact phone position | 0 | 0 | 0 | 0 | 0 | 0 | – |
 
 Charts: [lead time ECDF](lead_time_ecdf.png), [lead time histograms](lead_time_hist.png),
 [warned ≥ 3 s](share_ge3s.png), [conflicts](conflicts_per_1000.png), [false alarms](false_alarms.png),
@@ -141,17 +141,17 @@ Each point uses fewer attempts than the main run (see N in the tables); other pa
 ### Key numbers
 
 - **Audio baselines.** With the default audibility assumptions (tyre noise 48 dB(A) and AVAS 56 dB(A) at 2 m against 55–70 dB(A) background, detection at SNR > -3 dB), the pedestrian was warned ≥ 3 s ahead in 0.0 % (no warning) and 0.0 % (AVAS) of attempts, and had 193.0 and 193.0 conflicts per 1,000 crossings.
-- **HearMe with GPS.** Warned ≥ 3 s ahead in 94.0 % of attempts (median lead 5.70 s), 22.0 conflicts per 1,000 crossings, 0.004 false alarms per attempt, mean kerb wait 4.9 s.
-- **HearMe RSSI-only.** Warned ≥ 3 s ahead in 99.8 % of attempts (median first-warning lead 10.36 s; median *continuous* lead 5.21 s), 74.5 conflicts per 1,000, but 11.875 false alarms per attempt (75.5 % of attempts had at least one), 40.90 WARN/URGENT events per attempt in total, a mean kerb wait of 37.1 s and 14.9 % of pedestrians giving up after 90 s.
-- **Phone position error (diagnostic).** If the phone knew its own position exactly, HearMe GPS would warn ≥ 3 s ahead in 96.5 % of attempts (vs 94.0 % with independent phone GPS error), 14.0 conflicts per 1,000 (N = 1000).
-- **Packet loss, HearMe with GPS.** From 0 % to 60 % loss: warned ≥ 3 s 93.9 % → 93.5 %, conflicts 36.2 → 31.2 per 1,000, false alarms 0.011 → 0.001 per attempt.
-- **Packet loss, HearMe RSSI-only.** From 0 % to 60 % loss: warned ≥ 3 s 100.0 % → 94.0 %, conflicts 95.0 → 71.2 per 1,000, false alarms 13.064 → 4.335 per attempt.
-- **Body attenuation, HearMe with GPS.** From 0 dB to 20 dB: warned ≥ 3 s 94.9 % → 93.4 %, median lead 5.83 → 5.37 s, conflicts 31.2 → 33.8 per 1,000, false alarms 0.005 → 0.000.
-- **Body attenuation, HearMe RSSI-only.** From 0 dB to 20 dB: warned ≥ 3 s 100.0 % → 89.0 %, median lead 15.80 → 5.46 s, conflicts 135.0 → 95.0 per 1,000, false alarms 23.226 → 5.031.
+- **HearMe with GPS.** Warned ≥ 3 s ahead in 99.6 % of attempts (median lead 8.61 s), 0.0 conflicts per 1,000 crossings, 0.036 false alarms per attempt, mean kerb wait 7.9 s.
+- **HearMe RSSI-only.** Warned ≥ 3 s ahead in 99.9 % of attempts (median first-warning lead 11.45 s; median *continuous* lead 6.58 s), 86.0 conflicts per 1,000, but 16.311 false alarms per attempt (80.2 % of attempts had at least one), 54.89 WARN/URGENT events per attempt in total, a mean kerb wait of 50.1 s and 31.0 % of pedestrians giving up after 90 s.
+- **Phone position error (diagnostic).** If the phone knew its own position exactly, HearMe GPS would warn ≥ 3 s ahead in 99.7 % of attempts (vs 99.6 % with independent phone GPS error), 0.0 conflicts per 1,000 (N = 1000).
+- **Packet loss, HearMe with GPS.** From 0 % to 60 % loss: warned ≥ 3 s 99.9 % → 99.6 %, conflicts 0.0 → 0.0 per 1,000, false alarms 0.043 → 0.034 per attempt.
+- **Packet loss, HearMe RSSI-only.** From 0 % to 60 % loss: warned ≥ 3 s 100.0 % → 98.9 %, conflicts 107.5 → 45.0 per 1,000, false alarms 17.953 → 6.617 per attempt.
+- **Body attenuation, HearMe with GPS.** From 0 dB to 20 dB: warned ≥ 3 s 99.9 % → 99.0 %, median lead 8.84 → 7.69 s, conflicts 0.0 → 5.0 per 1,000, false alarms 0.031 → 0.024.
+- **Body attenuation, HearMe RSSI-only.** From 0 dB to 20 dB: warned ≥ 3 s 100.0 % → 93.2 %, median lead 16.60 → 6.20 s, conflicts 162.5 → 57.5 per 1,000, false alarms 27.312 → 7.317.
 - **Traffic density, No warning (tyre noise only).** From 60 to 600 riders/h: conflicts 72.5 → 506.2 per 1,000, mean wait 2.5 → 2.5 s, gave up waiting 0.0 % → 0.0 %.
 - **Traffic density, AVAS speaker on e-bike.** From 60 to 600 riders/h: conflicts 72.5 → 506.2 per 1,000, mean wait 2.5 → 2.5 s, gave up waiting 0.0 % → 0.0 %.
-- **Traffic density, HearMe RSSI-only.** From 60 to 600 riders/h: conflicts 6.2 → 497.5 per 1,000, mean wait 8.0 → 87.1 s, gave up waiting 0.0 % → 93.1 %.
-- **Traffic density, HearMe with GPS.** From 60 to 600 riders/h: conflicts 8.8 → 88.8 per 1,000, mean wait 3.2 → 15.3 s, gave up waiting 0.0 % → 0.1 %.
+- **Traffic density, HearMe RSSI-only.** From 60 to 600 riders/h: conflicts 5.0 → 461.2 per 1,000, mean wait 11.1 → 89.4 s, gave up waiting 0.2 % → 98.6 %.
+- **Traffic density, HearMe with GPS.** From 60 to 600 riders/h: conflicts 0.0 → 48.8 per 1,000, mean wait 3.9 → 31.7 s, gave up waiting 0.0 % → 8.6 %.
 - **Background noise, No warning (tyre noise only).** Warned ≥ 3 s by noise level — 35 dB(A): 0.0 %, 40 dB(A): 0.0 %, 45 dB(A): 0.0 %, 50 dB(A): 0.0 %, 55 dB(A): 0.0 %, 60 dB(A): 0.0 %, 65 dB(A): 0.0 %, 70 dB(A): 0.0 %.
 - **Background noise, AVAS speaker on e-bike.** Warned ≥ 3 s by noise level — 35 dB(A): 100.0 %, 40 dB(A): 0.0 %, 45 dB(A): 0.0 %, 50 dB(A): 0.0 %, 55 dB(A): 0.0 %, 60 dB(A): 0.0 %, 65 dB(A): 0.0 %, 70 dB(A): 0.0 %.
 
@@ -161,20 +161,20 @@ Each point uses fewer attempts than the main run (see N in the tables); other pa
 
 | Packet loss | Condition | N | Warned ≥ 3 s | Continuous ≥ 3 s | Lead median (s) | Conflicts / 1,000 (95 % CI) | False alarms / attempt | Mean wait (s) |
 |---|---|---|---|---|---|---|---|---|
-| 0 % | HearMe RSSI-only | 800 | 100.0 % | 87.6 % | 10.83 | 95.0 (76.6–117.3) | 13.064 | 39.4 |
-| 0 % | HearMe with GPS | 800 | 93.9 % | 79.6 % | 5.75 | 36.2 (25.4–51.6) | 0.011 | 5.2 |
-| 10 % | HearMe RSSI-only | 800 | 99.9 % | 86.6 % | 10.29 | 73.8 (57.6–94.0) | 12.189 | 37.4 |
-| 10 % | HearMe with GPS | 800 | 94.2 % | 82.0 % | 5.65 | 25.0 (16.2–38.3) | 0.003 | 5.2 |
-| 20 % | HearMe RSSI-only | 800 | 99.8 % | 84.9 % | 9.97 | 66.2 (51.0–85.6) | 10.379 | 32.4 |
-| 20 % | HearMe with GPS | 800 | 93.5 % | 79.2 % | 5.66 | 32.5 (22.3–47.2) | 0.007 | 5.2 |
-| 30 % | HearMe RSSI-only | 800 | 99.6 % | 81.8 % | 9.53 | 76.2 (59.8–96.7) | 9.135 | 30.4 |
-| 30 % | HearMe with GPS | 800 | 94.5 % | 81.4 % | 5.70 | 27.5 (18.2–41.3) | 0.003 | 5.1 |
-| 40 % | HearMe RSSI-only | 800 | 98.9 % | 79.0 % | 8.80 | 68.8 (53.2–88.4) | 7.505 | 26.2 |
-| 40 % | HearMe with GPS | 800 | 92.9 % | 79.1 % | 5.60 | 33.8 (23.3–48.7) | 0.005 | 5.2 |
-| 50 % | HearMe RSSI-only | 800 | 97.6 % | 77.1 % | 8.02 | 82.5 (65.4–103.6) | 5.567 | 21.2 |
-| 50 % | HearMe with GPS | 800 | 94.6 % | 80.6 % | 5.57 | 38.8 (27.4–54.5) | 0.003 | 5.3 |
-| 60 % | HearMe RSSI-only | 800 | 94.0 % | 70.9 % | 6.94 | 71.2 (55.4–91.2) | 4.335 | 18.6 |
-| 60 % | HearMe with GPS | 800 | 93.5 % | 82.2 % | 5.49 | 31.2 (21.3–45.7) | 0.001 | 5.3 |
+| 0 % | HearMe RSSI-only | 800 | 100.0 % | 94.5 % | 12.02 | 107.5 (87.9–130.9) | 17.953 | 53.5 |
+| 0 % | HearMe with GPS | 800 | 99.9 % | 99.4 % | 8.64 | 0.0 (0.0–4.8) | 0.043 | 8.3 |
+| 10 % | HearMe RSSI-only | 800 | 100.0 % | 92.2 % | 11.35 | 73.8 (57.6–94.0) | 17.067 | 50.7 |
+| 10 % | HearMe with GPS | 800 | 99.5 % | 98.6 % | 8.64 | 1.2 (0.2–7.0) | 0.031 | 8.1 |
+| 20 % | HearMe RSSI-only | 800 | 100.0 % | 91.9 % | 11.23 | 76.2 (59.8–96.7) | 15.350 | 47.3 |
+| 20 % | HearMe with GPS | 800 | 99.6 % | 99.0 % | 8.58 | 0.0 (0.0–4.8) | 0.022 | 8.2 |
+| 30 % | HearMe RSSI-only | 800 | 100.0 % | 89.4 % | 10.74 | 81.2 (64.3–102.2) | 13.241 | 43.5 |
+| 30 % | HearMe with GPS | 800 | 99.4 % | 98.4 % | 8.53 | 1.2 (0.2–7.0) | 0.022 | 8.1 |
+| 40 % | HearMe RSSI-only | 800 | 99.9 % | 89.2 % | 9.93 | 65.0 (49.9–84.2) | 11.664 | 39.6 |
+| 40 % | HearMe with GPS | 800 | 99.6 % | 99.4 % | 8.48 | 0.0 (0.0–4.8) | 0.049 | 8.3 |
+| 50 % | HearMe RSSI-only | 800 | 99.5 % | 89.2 % | 9.36 | 67.5 (52.1–87.0) | 9.055 | 33.3 |
+| 50 % | HearMe with GPS | 800 | 99.6 % | 99.5 % | 8.43 | 2.5 (0.7–9.1) | 0.016 | 8.1 |
+| 60 % | HearMe RSSI-only | 800 | 98.9 % | 83.6 % | 8.29 | 45.0 (32.7–61.7) | 6.617 | 28.2 |
+| 60 % | HearMe with GPS | 800 | 99.6 % | 99.0 % | 8.37 | 0.0 (0.0–4.8) | 0.034 | 8.1 |
 
 ### Body attenuation (phone in pocket vs wrist)
 
@@ -182,16 +182,16 @@ Each point uses fewer attempts than the main run (see N in the tables); other pa
 
 | Body loss at worst angle (dB) | Condition | N | Warned ≥ 3 s | Continuous ≥ 3 s | Lead median (s) | Conflicts / 1,000 (95 % CI) | False alarms / attempt | Mean wait (s) |
 |---|---|---|---|---|---|---|---|---|
-| 0 | HearMe RSSI-only | 800 | 100.0 % | 92.9 % | 15.80 | 135.0 (113.1–160.4) | 23.226 | 61.9 |
-| 0 | HearMe with GPS | 800 | 94.9 % | 82.2 % | 5.83 | 31.2 (21.3–45.7) | 0.005 | 5.2 |
-| 4 | HearMe RSSI-only | 800 | 100.0 % | 92.9 % | 13.92 | 100.0 (81.1–122.7) | 18.726 | 52.8 |
-| 4 | HearMe with GPS | 800 | 93.5 % | 79.5 % | 5.75 | 30.0 (20.2–44.3) | 0.000 | 5.3 |
-| 10 | HearMe RSSI-only | 800 | 99.9 % | 86.6 % | 10.29 | 73.8 (57.6–94.0) | 12.189 | 37.4 |
-| 10 | HearMe with GPS | 800 | 94.2 % | 82.0 % | 5.65 | 25.0 (16.2–38.3) | 0.003 | 5.2 |
-| 15 | HearMe RSSI-only | 800 | 98.9 % | 77.2 % | 7.74 | 91.2 (73.2–113.2) | 7.590 | 25.1 |
-| 15 | HearMe with GPS | 800 | 94.2 % | 80.5 % | 5.60 | 38.8 (27.4–54.5) | 0.001 | 5.0 |
-| 20 | HearMe RSSI-only | 800 | 89.0 % | 62.7 % | 5.46 | 95.0 (76.6–117.3) | 5.031 | 17.5 |
-| 20 | HearMe with GPS | 800 | 93.4 % | 81.9 % | 5.37 | 33.8 (23.3–48.7) | 0.000 | 5.0 |
+| 0 | HearMe RSSI-only | 800 | 100.0 % | 94.6 % | 16.60 | 162.5 (138.6–189.7) | 27.312 | 70.3 |
+| 0 | HearMe with GPS | 800 | 99.9 % | 99.1 % | 8.84 | 0.0 (0.0–4.8) | 0.031 | 8.4 |
+| 4 | HearMe RSSI-only | 800 | 100.0 % | 95.2 % | 14.89 | 131.2 (109.6–156.4) | 23.890 | 65.2 |
+| 4 | HearMe with GPS | 800 | 99.5 % | 98.5 % | 8.78 | 0.0 (0.0–4.8) | 0.045 | 8.4 |
+| 10 | HearMe RSSI-only | 800 | 100.0 % | 92.2 % | 11.35 | 73.8 (57.6–94.0) | 17.067 | 50.7 |
+| 10 | HearMe with GPS | 800 | 99.5 % | 98.6 % | 8.64 | 1.2 (0.2–7.0) | 0.031 | 8.1 |
+| 15 | HearMe RSSI-only | 800 | 99.4 % | 87.1 % | 8.64 | 60.0 (45.6–78.7) | 11.304 | 36.9 |
+| 15 | HearMe with GPS | 800 | 99.4 % | 98.8 % | 8.27 | 1.2 (0.2–7.0) | 0.035 | 8.0 |
+| 20 | HearMe RSSI-only | 800 | 93.2 % | 79.6 % | 6.20 | 57.5 (43.4–75.8) | 7.317 | 25.0 |
+| 20 | HearMe with GPS | 800 | 99.0 % | 97.9 % | 7.69 | 5.0 (1.9–12.8) | 0.024 | 7.1 |
 
 ### Traffic density
 
@@ -201,28 +201,28 @@ Each point uses fewer attempts than the main run (see N in the tables); other pa
 |---|---|---|---|---|---|---|---|---|
 | 60 | No warning (tyre noise only) | 800 | 0.0 % | 0.0 % | 0.00 | 72.5 (56.5–92.6) | 0.000 | 2.5 |
 | 60 | AVAS speaker on e-bike | 800 | 0.0 % | 0.0 % | 0.00 | 72.5 (56.5–92.6) | 0.000 | 2.5 |
-| 60 | HearMe RSSI-only | 800 | 99.9 % | 84.2 % | 10.03 | 6.2 (2.7–14.5) | 1.425 | 8.0 |
-| 60 | HearMe with GPS | 800 | 93.6 % | 78.4 % | 5.73 | 8.8 (4.2–18.0) | 0.000 | 3.2 |
+| 60 | HearMe RSSI-only | 800 | 100.0 % | 90.8 % | 11.50 | 5.0 (1.9–12.8) | 1.921 | 11.1 |
+| 60 | HearMe with GPS | 800 | 99.5 % | 98.4 % | 8.57 | 0.0 (0.0–4.8) | 0.010 | 3.9 |
 | 120 | No warning (tyre noise only) | 800 | 0.0 % | 0.0 % | 0.00 | 131.2 (109.6–156.4) | 0.000 | 2.5 |
 | 120 | AVAS speaker on e-bike | 800 | 0.0 % | 0.0 % | 0.00 | 131.2 (109.6–156.4) | 0.000 | 2.5 |
-| 120 | HearMe RSSI-only | 800 | 99.5 % | 84.5 % | 10.32 | 35.0 (24.3–50.1) | 4.395 | 17.9 |
-| 120 | HearMe with GPS | 800 | 94.8 % | 78.4 % | 5.69 | 13.8 (7.7–24.5) | 0.004 | 3.9 |
+| 120 | HearMe RSSI-only | 800 | 99.9 % | 91.4 % | 11.49 | 18.8 (11.4–30.7) | 6.531 | 26.3 |
+| 120 | HearMe with GPS | 800 | 99.5 % | 98.9 % | 8.59 | 0.0 (0.0–4.8) | 0.019 | 5.4 |
 | 200 | No warning (tyre noise only) | 800 | 0.0 % | 0.0 % | 0.00 | 220.0 (192.7–250.0) | 0.000 | 2.5 |
 | 200 | AVAS speaker on e-bike | 800 | 0.0 % | 0.0 % | 0.00 | 220.0 (192.7–250.0) | 0.000 | 2.5 |
-| 200 | HearMe RSSI-only | 800 | 99.9 % | 86.6 % | 10.29 | 73.8 (57.6–94.0) | 12.189 | 37.4 |
-| 200 | HearMe with GPS | 800 | 94.2 % | 82.0 % | 5.65 | 25.0 (16.2–38.3) | 0.003 | 5.2 |
+| 200 | HearMe RSSI-only | 800 | 100.0 % | 92.2 % | 11.35 | 73.8 (57.6–94.0) | 17.067 | 50.7 |
+| 200 | HearMe with GPS | 800 | 99.5 % | 98.6 % | 8.64 | 1.2 (0.2–7.0) | 0.031 | 8.1 |
 | 300 | No warning (tyre noise only) | 800 | 0.0 % | 0.0 % | 0.00 | 265.0 (235.6–296.7) | 0.000 | 2.5 |
 | 300 | AVAS speaker on e-bike | 800 | 0.0 % | 0.0 % | 0.00 | 265.0 (235.6–296.7) | 0.000 | 2.5 |
-| 300 | HearMe RSSI-only | 800 | 100.0 % | 88.5 % | 10.28 | 181.2 (156.1–209.4) | 23.671 | 60.7 |
-| 300 | HearMe with GPS | 800 | 94.2 % | 79.9 % | 5.73 | 27.5 (18.2–41.3) | 0.005 | 6.5 |
+| 300 | HearMe RSSI-only | 800 | 100.0 % | 93.9 % | 11.25 | 210.0 (183.2–239.6) | 30.371 | 72.5 |
+| 300 | HearMe with GPS | 800 | 99.9 % | 99.5 % | 8.62 | 3.8 (1.3–11.0) | 0.052 | 11.5 |
 | 450 | No warning (tyre noise only) | 800 | 0.0 % | 0.0 % | 0.00 | 401.2 (367.8–435.6) | 0.000 | 2.5 |
 | 450 | AVAS speaker on e-bike | 800 | 0.0 % | 0.0 % | 0.00 | 401.2 (367.8–435.6) | 0.000 | 2.5 |
-| 450 | HearMe RSSI-only | 800 | 100.0 % | 89.5 % | 10.23 | 372.5 (339.7–406.5) | 40.553 | 80.1 |
-| 450 | HearMe with GPS | 800 | 94.4 % | 81.9 % | 5.69 | 63.8 (48.8–82.9) | 0.007 | 10.4 |
+| 450 | HearMe RSSI-only | 800 | 100.0 % | 94.1 % | 11.23 | 372.5 (339.7–406.5) | 48.536 | 85.9 |
+| 450 | HearMe with GPS | 800 | 99.9 % | 99.5 % | 8.60 | 8.8 (4.2–18.0) | 0.079 | 20.9 |
 | 600 | No warning (tyre noise only) | 800 | 0.0 % | 0.0 % | 0.00 | 506.2 (471.7–540.8) | 0.000 | 2.5 |
 | 600 | AVAS speaker on e-bike | 800 | 0.0 % | 0.0 % | 0.00 | 506.2 (471.7–540.8) | 0.000 | 2.5 |
-| 600 | HearMe RSSI-only | 800 | 100.0 % | 90.2 % | 10.37 | 497.5 (462.9–532.1) | 55.483 | 87.1 |
-| 600 | HearMe with GPS | 800 | 95.2 % | 80.1 % | 5.69 | 88.8 (71.0–110.5) | 0.011 | 15.3 |
+| 600 | HearMe RSSI-only | 800 | 100.0 % | 94.9 % | 11.45 | 461.2 (427.0–495.9) | 64.957 | 89.4 |
+| 600 | HearMe with GPS | 800 | 99.6 % | 98.5 % | 8.51 | 48.8 (35.9–65.9) | 0.138 | 31.7 |
 
 ### Background noise (audio baselines only)
 
@@ -259,10 +259,10 @@ assumed levels: at 35 dB(A) the AVAS speaker gives a ≥ 3 s warning in 100.0 % 
 35 dB(A) is heard only 1.16 s (median) before arrival. Treat the audio baselines as a
 "quiet e-bike in normal street noise" bound, not as a measured human hearing performance.
 
-**2. HearMe with GPS gives a consistent ~5.7 s warning with almost no false alarms.** The lead time is set by the
-receiver's `warn_ttr_s` = 6 s threshold (median 5.70 s, p10–p90 4.12–6.58 s). Its
-remaining 44 conflicts in 2000 attempts: 18 happened while the pedestrian was stepping back
-(the step-back rule can walk them into a near-lane rider), and 30 involved a rider that had
+**2. HearMe with GPS gives a consistent ~8.6 s warning with almost no false alarms.** The lead time is set by the
+receiver's `warn_ttr_s` = 6 s threshold (median 8.61 s, p10–p90 7.26–9.59 s). Its
+remaining 0 conflicts in 2000 attempts: 0 happened while the pedestrian was stepping back
+(the step-back rule can walk them into a near-lane rider), and 0 involved a rider that had
 *not* been warned before the pedestrian's last step-out (the two groups overlap) — typically a rider still more than 6 s away at
 step-out, while a pedestrian at 0.6–1.4 m/s needs about 5–12 s to cross the 7 m carriageway. A WARN horizon shorter than the crossing time is a structural limit of
 the current thresholds, not radio failure.
@@ -270,28 +270,28 @@ the current thresholds, not radio failure.
 **3. GPS warnings flicker for riders about 6 m to the side.** When the pedestrian is at the kerb, far-lane riders pass about
 6.25 m away, inside the receiver's `pass_radius_m` = 8 m but by less than the combined GPS error (vehicle and phone, each
 2.83 m per axis). For critical riders arriving while the pedestrian was still at the kerb or on the road, a
-*continuous* ≥ 3 s warning was present in 90.9 % of near-lane cases (N = 484) but only
-67.4 % of far-lane cases (N = 472); the first warning was ≥ 3 s ahead in 97.7 %
-and 90.9 % respectively. With exact phone position (diagnostic row) conflicts drop from 22.0 to
-14.0 per 1,000 (overlapping CIs; N = 1000).
+*continuous* ≥ 3 s warning was present in 99.6 % of near-lane cases (N = 549) but only
+98.1 % of far-lane cases (N = 538); the first warning was ≥ 3 s ahead in 100.0 %
+and 99.1 % respectively. With exact phone position (diagnostic row) conflicts drop from 0.0 to
+0.0 per 1,000 (overlapping CIs; N = 1000).
 
-**4. RSSI-only "wins" on first-warning lead time for the wrong reason.** Its median first-warning lead (10.36 s) is
-longer than GPS (5.70 s) — the opposite of what one would expect — but this is not better ranging. In RSSI-only mode
+**4. RSSI-only "wins" on first-warning lead time for the wrong reason.** Its median first-warning lead (11.45 s) is
+longer than GPS (8.61 s) — the opposite of what one would expect — but this is not better ranging. In RSSI-only mode
 `receiver.py` treats a track as approaching whenever the filtered range rate shows ≥ 0.8 m/s of closing, and then uses the
 *advertised ground speed* (not the closing speed) to compute time-to-reach. Shadowing and fast fading (σ 4 + 2 dB)
 move the RSSI-derived range by up to about a factor of two (6 dB ≈ ×1.9 with n = 2.2), i.e. tens of metres for riders
 30–100 m away, and near the sensitivity limit only up-faded packets survive, so distant
 riders look closer than they are. The result is early, intermittent WARN/URGENT alerts for almost every rider in range, including
-receding ones and the parallel street: 40.90 WARN/URGENT events per attempt (GPS: 4.40) and
-11.875 false alarms per attempt. Measured from the last uninterrupted warning, the two modes are close
-(median continuous lead 5.21 s RSSI-only vs 5.48 s GPS).
-The cost is waiting: mean 37.1 s at the kerb vs 4.9 s, and 14.9 % of pedestrians
-gave up after 90 s and crossed while ignoring warnings — 90 of RSSI-only's
-149 conflicts happened in such forced crossings. In the field this alert rate would very likely be switched off by users.
+receding ones and the parallel street: 54.89 WARN/URGENT events per attempt (GPS: 5.27) and
+16.311 false alarms per attempt. Measured from the last uninterrupted warning, the two modes are close
+(median continuous lead 6.58 s RSSI-only vs 8.54 s GPS).
+The cost is waiting: mean 50.1 s at the kerb vs 7.9 s, and 31.0 % of pedestrians
+gave up after 90 s and crossed while ignoring warnings — 164 of RSSI-only's
+172 conflicts happened in such forced crossings. In the field this alert rate would very likely be switched off by users.
 
 **5. Sensitivity.** The GPS mode is nearly flat across packet loss 0–60 % and body attenuation 0–20 dB (it needs only a few packets
-per second, and position does not depend on RSSI). RSSI-only gets *fewer* false alarms with *worse* radio — 13.06
-→ 4.33 per attempt from 0 % to 60 % loss, 23.23 → 5.03
+per second, and position does not depend on RSSI). RSSI-only gets *fewer* false alarms with *worse* radio — 17.95
+→ 6.62 per attempt from 0 % to 60 % loss, 27.31 → 7.32
 from 0 to 20 dB body loss — because fewer distant packets reach the receiver; another sign its alerts are noise-driven. Traffic
 density raises conflicts in every condition (riders never yield); for RSSI-only it also drives waiting time and give-ups up
 steeply. All these statements are about the model, under its stated assumptions.
@@ -327,5 +327,5 @@ All assumptions are labelled in `sim/params.py` and `sim/mc_params.py`. Re-run w
 ## 7. Values passed to the city dashboard generator
 
 `sim/gen_city_data.py` reads `dashboard_rates` from `results.json`: in the HearMe GPS condition
-910 of 941 fast passes within 5 m of the pedestrian
-(96.7 %) produced at least one URGENT alert. The dashboard data built from it is synthetic.
+1129 of 1133 fast passes within 5 m of the pedestrian
+(99.6 %) produced at least one URGENT alert. The dashboard data built from it is synthetic.
