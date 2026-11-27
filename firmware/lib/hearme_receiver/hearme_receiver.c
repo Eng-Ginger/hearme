@@ -20,6 +20,8 @@ static hm_rx_track_t  g_tracks[HM_RX_MAX_TRACKS];
 static uint32_t       g_seq;
 static int            g_have_pose;
 static double         g_pose_lat, g_pose_lon, g_pose_head;
+static int            g_pose_has_acc;
+static double         g_pose_acc;
 static long           g_rejected;
 
 static const char *const LEVEL_NAMES[4] = { "ignore", "aware", "warn", "urgent" };
@@ -37,12 +39,20 @@ void hm_rx_default_config(hm_rx_config_t *c) {
     c->forget_s = 30.0;
     c->danger_radius_m = 3.0;
     c->pass_radius_m = 8.0;
+    c->pass_k = 0.5;
+    c->vehicle_gps_acc_m = 4.0;
+    c->pedestrian_gps_acc_m = 4.0;
     c->aware_dist_m = 35.0;
     c->warn_ttr_s = 6.0;
     c->urgent_ttr_s = 3.0;
+    c->road_width_m = 7.0;
+    c->walk_speed_mps = 1.0;
+    c->crossing_margin_s = 2.0;
     c->urgent_dist_m = 6.0;
     c->hysteresis_s = 1.0;
+    c->hysteresis_m = 2.0;
     c->hold_s = 1.5;
+    c->warn_hold_s = 2.0;
     c->min_approach_mps = 0.8;
     c->moving_mps = 0.5;
     c->alert_repeat_s = 4.0;
@@ -73,6 +83,28 @@ const hm_rx_track_t *hm_rx_tracks(int *count) { if (count) *count = HM_RX_MAX_TR
 
 void hm_rx_set_pose(double lat, double lon, double heading_deg) {
     g_pose_lat = lat; g_pose_lon = lon; g_pose_head = heading_deg; g_have_pose = 1;
+    g_pose_has_acc = 0; g_pose_acc = 0.0;
+}
+
+void hm_rx_set_pose_acc(double lat, double lon, double heading_deg, double acc_m) {
+    hm_rx_set_pose(lat, lon, heading_deg);
+    g_pose_has_acc = 1; g_pose_acc = acc_m;
+}
+
+/* Crossing-aware: warn = max(warn_ttr_s, road/walk + margin); urgent scales with warn. */
+void hm_rx_warn_thresholds(double *warn, double *urgent) {
+    double crossing = g_cfg.road_width_m / g_cfg.walk_speed_mps;
+    double a = crossing + g_cfg.crossing_margin_s;
+    double w = g_cfg.warn_ttr_s >= a ? g_cfg.warn_ttr_s : a;
+    *warn = w;
+    *urgent = g_cfg.urgent_ttr_s * w / g_cfg.warn_ttr_s;
+}
+
+/* Pass radius grown by the combined position uncertainty of vehicle and pedestrian. */
+double hm_rx_pass_radius(void) {
+    double ped = (g_have_pose && g_pose_has_acc) ? g_pose_acc : g_cfg.pedestrian_gps_acc_m;
+    double sigma = sqrt(g_cfg.vehicle_gps_acc_m * g_cfg.vehicle_gps_acc_m + ped * ped);
+    return g_cfg.pass_radius_m + g_cfg.pass_k * sigma;
 }
 
 /* ------------------------------------------------------------------ helpers */
@@ -259,7 +291,7 @@ static int track_count(void) {
     return n;
 }
 
-typedef struct { double dist; int has_ttr; double ttr; const char *side; int approaching, moving; } geo_t;
+typedef struct { double dist; int has_ttr; double ttr; const char *side; int approaching, moving, closing; } geo_t;
 
 static geo_t geometry(const hm_rx_track_t *tr) {
     geo_t g;
@@ -283,6 +315,7 @@ static geo_t geometry(const hm_rx_track_t *tr) {
         g.side = side_of(rel);
         g.has_ttr = 0; g.ttr = 0.0;
         g.approaching = 0;
+        g.closing = 0;
         if (has_speed && has_heading && speed >= g_cfg.moving_mps) {
             double h = py_radians(heading);
             double vx = speed * sin(h), vy = speed * cos(h);
@@ -290,7 +323,8 @@ static geo_t geometry(const hm_rx_track_t *tr) {
             if (tc > 0.0) {
                 double cx = rx + vx * tc, cy = ry + vy * tc;
                 double cpa = sqrt(cx * cx + cy * cy);
-                if (cpa <= g_cfg.pass_radius_m) {
+                g.closing = 1;          /* distance still decreasing */
+                if (cpa <= hm_rx_pass_radius()) {
                     g.approaching = 1;
                     g.has_ttr = 1; g.ttr = tc;
                 }
@@ -311,22 +345,24 @@ static geo_t geometry(const hm_rx_track_t *tr) {
             g.ttr = (g.dist - g_cfg.danger_radius_m) / rate;
             if (g.ttr < 0.0) g.ttr = 0.0;
         }
+        g.closing = g.approaching;
     }
     return g;
 }
 
-static int level_for(const geo_t *g, double margin) {
+static int level_for(const geo_t *g, double margin_s, double margin_m, double warn, double urgent) {
     if (!g->moving) return HM_LVL_IGNORE;
-    if (g->has_ttr && g->ttr <= g_cfg.urgent_ttr_s + margin) return HM_LVL_URGENT;
-    if (g->approaching && g->dist <= g_cfg.urgent_dist_m + margin) return HM_LVL_URGENT;
-    if (g->has_ttr && g->ttr <= g_cfg.warn_ttr_s + margin) return HM_LVL_WARN;
-    if (g->dist <= g_cfg.aware_dist_m + margin * 5.0) return HM_LVL_AWARE;
+    if (g->has_ttr && g->ttr <= urgent + margin_s) return HM_LVL_URGENT;
+    if (g->approaching && g->dist <= g_cfg.urgent_dist_m + margin_m) return HM_LVL_URGENT;
+    if (g->has_ttr && g->ttr <= warn + margin_s) return HM_LVL_WARN;
+    if (g->dist <= g_cfg.aware_dist_m + margin_m) return HM_LVL_AWARE;
     return HM_LVL_IGNORE;
 }
 
 static void evaluate(hm_rx_track_t *tr, double t, evbuf_t *eb) {
     geo_t g;
     int enter, stay;
+    double warn, urgent;
     int has_speed = tr->p_speed_raw != HM_SPEED_UNKNOWN;
     double speed = has_speed ? tr->p_speed_raw / 10.0 : 0.0;
     hm_rx_event_t *e;
@@ -355,30 +391,36 @@ static void evaluate(hm_rx_track_t *tr, double t, evbuf_t *eb) {
         if (e) bus_text(tr->p_route, tr->p_door, g.side, e->text_en, e->text_ar);
     }
 
-    enter = level_for(&g, 0.0);
-    stay = level_for(&g, g_cfg.hysteresis_s);
+    hm_rx_warn_thresholds(&warn, &urgent);
+    enter = level_for(&g, 0.0, 0.0, warn, urgent);
+    stay = level_for(&g, g_cfg.hysteresis_s, g_cfg.hysteresis_m, warn, urgent);
+    /* minimum warn hold: a raised WARN does not drop out while the vehicle is still closing
+     * (time to closest approach > 0) or within warn_hold_s of being raised */
+    if (tr->level >= HM_LVL_WARN && stay < HM_LVL_WARN && g.moving &&
+        (g.closing || t - tr->warn_since < g_cfg.warn_hold_s))
+        stay = HM_LVL_WARN;
     /* a bus braking (into a stop) is expected, not a threat: cap at aware */
     if (tr->p_type == HM_BUS && tr->p_braking) {
         if (enter > HM_LVL_AWARE) enter = HM_LVL_AWARE;
         if (stay > HM_LVL_AWARE) stay = HM_LVL_AWARE;
     }
     if (enter > tr->level) {
+        /* every upward transition alerts, including re-escalation after a drop */
+        int has_seconds = 0, seconds = 0;
+        char kind[16];
+        if (enter >= HM_LVL_WARN && tr->level < HM_LVL_WARN) tr->warn_since = t;
         tr->level = enter;
         tr->lower_since = -1.0;
-        if (t - tr->last_alert_t[enter] >= g_cfg.alert_repeat_s) {
-            int has_seconds = 0, seconds = 0;
-            char kind[16];
-            tr->last_alert_t[enter] = t;
-            if (enter >= HM_LVL_WARN && g.has_ttr) {
-                long long s = round_half_up(g.ttr);
-                if (s < 1) s = 1;
-                has_seconds = 1; seconds = (int)s;
-            }
-            snprintf(kind, sizeof kind, "vehicle_%s", LEVEL_NAMES[enter]);
-            e = ev_new(eb, tr, t, kind, enter, g.side, has_seconds, seconds);
-            if (e) vehicle_text(enter, tr->p_type, has_speed, speed, g.side, has_seconds, seconds,
-                                e->text_en, e->text_ar);
+        tr->last_alert_t[enter] = t;
+        if (enter >= HM_LVL_WARN && g.has_ttr) {
+            long long s = round_half_up(g.ttr);
+            if (s < 1) s = 1;
+            has_seconds = 1; seconds = (int)s;
         }
+        snprintf(kind, sizeof kind, "vehicle_%s", LEVEL_NAMES[enter]);
+        e = ev_new(eb, tr, t, kind, enter, g.side, has_seconds, seconds);
+        if (e) vehicle_text(enter, tr->p_type, has_speed, speed, g.side, has_seconds, seconds,
+                            e->text_en, e->text_ar);
     } else if (stay < tr->level) {
         if (tr->lower_since < 0.0) {
             tr->lower_since = t;
@@ -420,7 +462,7 @@ int hm_rx_process_payload(double t, double rssi, const uint8_t *payload, size_t 
         memcpy(tr->id, rid, 9); tr->type = p.type;
         tr->first_t = t; tr->last_t = t;
         tr->packets = 0;
-        tr->level = HM_LVL_IGNORE; tr->lower_since = -1.0;
+        tr->level = HM_LVL_IGNORE; tr->lower_since = -1.0; tr->warn_since = -1.0;
         for (i = 0; i < 4; i++) tr->last_alert_t[i] = -1e9;
         tr->announced = 0; tr->last_announce_t = -1e9;
         tr->side = "unknown";

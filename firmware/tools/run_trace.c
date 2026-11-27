@@ -55,7 +55,8 @@ static int set_cfg(hm_rx_config_t *c, const char *name, const char *val) {
     F(tx_power_1m) F(path_loss_n) F(rssi_alpha) F(ab_alpha) F(ab_beta) F(stale_s) F(forget_s)
     F(danger_radius_m) F(pass_radius_m) F(aware_dist_m) F(warn_ttr_s) F(urgent_ttr_s) F(urgent_dist_m)
     F(hysteresis_s) F(hold_s) F(min_approach_mps) F(moving_mps) F(alert_repeat_s) F(bus_announce_dist_m)
-    F(infra_announce_dist_m) F(infra_reannounce_s)
+    F(infra_announce_dist_m) F(infra_reannounce_s) F(pass_k) F(vehicle_gps_acc_m) F(pedestrian_gps_acc_m)
+    F(road_width_m) F(walk_speed_mps) F(crossing_margin_s) F(hysteresis_m) F(warn_hold_s)
 #undef F
     if (!strcmp(name, "require_mac")) { c->require_mac = v != 0; return 1; }
     if (!strcmp(name, "use_position")) { c->use_position = v != 0; return 1; }
@@ -89,7 +90,9 @@ int main(int argc, char **argv) {
         if (!strcmp(tok, "POSE")) {
             double lat = strtod(strtok(NULL, " "), NULL), lon = strtod(strtok(NULL, " "), NULL);
             double hd = strtod(strtok(NULL, " \r\n"), NULL);
-            hm_rx_set_pose(lat, lon, hd);
+            char *acc = strtok(NULL, " \r\n");   /* optional 4th value: pose accuracy (m) */
+            if (acc && strcmp(acc, "None")) hm_rx_set_pose_acc(lat, lon, hd, strtod(acc, NULL));
+            else hm_rx_set_pose(lat, lon, hd);
         } else if (!strcmp(tok, "PKT")) {
             hm_rx_event_t ev[HM_RX_MAX_EVENTS];
             unsigned char buf[64];

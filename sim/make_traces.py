@@ -28,12 +28,14 @@ PED_HEADING = 0.0       # facing north, about to cross
 
 
 def build(name, vehicles, duration, seed, config=None, gps=True, loss=0.10, body_db=10.0,
-          spoof=None, ped=PED, ped_heading=PED_HEADING, description=""):
+          spoof=None, ped=PED, ped_heading=PED_HEADING, description="", pose_acc=None, outage=None):
     rng = np.random.default_rng(seed)
     chan = Channel(rng, loss=loss, body_db=body_db)
     beacons = [Beacon(v, rng, gps=gps and not v.infra) for v in vehicles]
     lat, lon = to_latlon(*ped)
     events = [{"k": "pose", "t": T0, "lat": lat, "lon": lon, "heading": ped_heading}]
+    if pose_acc is not None:
+        events[0]["acc"] = pose_acc
     t, tick_next = 0.0, 0.0
     while t < duration:
         # next event: earliest adv or tick
@@ -47,6 +49,9 @@ def build(name, vehicles, duration, seed, config=None, gps=True, loss=0.10, body
         nb.next_adv += 0.100 + rng.uniform(0, 0.010)
         if t < nb.v.t_start:
             continue
+        if outage and outage[0] <= t < outage[1]:
+            continue   # radio outage (e.g. a truck blocks the path): no packets
+
         x, y, _ = nb.v.state(t)
         d = float(np.hypot(x - ped[0], y - ped[1]))
         r = chan.rssi(id(nb), t, d, rel_angle(ped, ped_heading, x, y))
@@ -80,7 +85,8 @@ def write_line_format(trace, path):
                 f.write(f"CFG {k} {int(v) if isinstance(v, bool) else v!r}\n")
         for e in trace["events"]:
             if e["k"] == "pose":
-                f.write(f"POSE {e['lat']!r} {e['lon']!r} {e['heading']!r}\n")
+                acc = f" {e['acc']!r}" if e.get("acc") is not None else ""
+                f.write(f"POSE {e['lat']!r} {e['lon']!r} {e['heading']!r}{acc}\n")
             elif e["k"] == "pkt":
                 f.write(f"PKT {e['t']!r} {e['rssi']} {e['hex']}\n")
             else:
@@ -114,6 +120,19 @@ def scenarios():
     yield build("spoof_rejected", [Vehicle("e_bike", (60, 1.75), 270, 7.0, secret=b"real")], 14, 7,
                 config={"require_mac": True}, spoof=True,
                 description="Attacker floods fake e-bike packets with a wrong key; require_mac drops them.")
+    # v1.1 receiver fixes ----------------------------------------------------------------
+    yield build("slow_walker_crossing", [Vehicle("e_bike", (-110, -1.75), 90, 7.0, secret=b"slow-w")], 18, 8,
+                config={"walk_speed_mps": 0.7},
+                description="Crossing-aware warning: slow walker (0.7 m/s) -> warn at 7/0.7+2 = 12 s, urgent 6 s.")
+    yield build("far_lane_poor_gps", [Vehicle("e_scooter", (80, 1.75), 270, 6.5, secret=b"far-lane")], 16, 9,
+                pose_acc=12.0,
+                description="Far-lane rider with a poor pedestrian GPS fix (12 m): adaptive pass radius + warn hold.")
+    yield build("reescalation_after_outage", [Vehicle("e_bike", (-90, -1.75), 90, 5.0, secret=b"outage")], 24, 10,
+                outage=(9.6, 12.6),
+                description="Packets stop for 3.2 s (stale -> ignore), then resume: the re-escalation must alert again.")
+    yield build("hysteresis_units", [Vehicle("e_bike", (-70, -1.75), 90, 7.0, secret=b"hyst")], 14, 11,
+                config={"hysteresis_s": 0.5, "hysteresis_m": 4.0},
+                description="Separate time (s) and distance (m) hysteresis margins.")
 
 
 def main():

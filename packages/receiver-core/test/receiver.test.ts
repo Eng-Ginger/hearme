@@ -48,17 +48,41 @@ describe("state machine", () => {
     expect(ev).toEqual([]);
   });
 
-  it("hysteresis: holds level for hold_s before downgrading, stale -> ignore", () => {
+  it("hysteresis + warn hold: urgent -> warn (held 2 s after raise) -> aware, stale -> ignore", () => {
     const rx = new Receiver();
     rx.setPose(LAT, LON, 0);
     rx.processPacket(T0, -60, bikeAt(-14, 2, 7, 90)); // ttr 2 s -> urgent
     expect(rx.states()[0].level).toBe("urgent");
-    rx.processPacket(T0 + 0.1, -60, bikeAt(5, 2, 7, 90)); // passed: wants aware
-    expect(rx.states()[0].level).toBe("urgent");
+    rx.processPacket(T0 + 0.1, -60, bikeAt(5, 2, 7, 90)); // passed, receding: wants aware
+    expect(rx.states()[0].level).toBe("urgent"); // hold_s not elapsed
     rx.processPacket(T0 + 1.7, -60, bikeAt(15, 2, 7, 90));
+    expect(rx.states()[0].level).toBe("warn"); // warn_hold_s (2 s) keeps it at warn
+    rx.processPacket(T0 + 3.6, -60, bikeAt(25, 2, 7, 90));
+    rx.processPacket(T0 + 5.2, -60, bikeAt(36, 2, 7, 90));
     expect(rx.states()[0].level).toBe("aware");
-    rx.tick(T0 + 5);
+    rx.tick(T0 + 8);
     expect(rx.states()[0].level).toBe("ignore");
+  });
+
+  it("re-escalation after a drop always alerts (even within 4 s)", () => {
+    const rx = new Receiver();
+    rx.setPose(LAT, LON, 0);
+    const k1 = rx.processPacket(T0, -60, bikeAt(-50, 2, 7, 90)).map((e) => e.kind); // ttr ~7 s -> warn
+    rx.tick(T0 + 2.7); // no packets for 2.7 s -> stale -> ignore
+    expect(rx.states()[0].level).toBe("ignore");
+    const k2 = rx.processPacket(T0 + 2.8, -60, bikeAt(-40, 2, 7, 90)).map((e) => e.kind);
+    expect(k1).toEqual(["vehicle_warn"]);
+    expect(k2).toEqual(["vehicle_warn"]);
+  });
+
+  it("crossing-aware thresholds and adaptive pass radius", () => {
+    expect(new Receiver().warnThresholds()).toEqual([9, 4.5]);
+    expect(new Receiver({ walk_speed_mps: 0.7 }).warnThresholds()[0]).toBeCloseTo(12, 9);
+    expect(new Receiver({ walk_speed_mps: 1.3 }).warnThresholds()[0]).toBeCloseTo(7.3846, 3);
+    const rx = new Receiver();
+    expect(rx.passRadius()).toBeCloseTo(8 + 0.5 * Math.sqrt(32), 9);
+    rx.setPose(LAT, LON, 0, 12);
+    expect(rx.passRadius()).toBeCloseTo(8 + 0.5 * Math.sqrt(160), 9);
   });
 
   it("rejects spoofed packets when require_mac is set", () => {

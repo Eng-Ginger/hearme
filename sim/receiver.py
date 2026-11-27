@@ -36,16 +36,24 @@ class Config:
     stale_s: float = 2.5            # no packet for this long -> ignore
     forget_s: float = 30.0          # drop the track entirely
     danger_radius_m: float = 3.0    # RSSI-only: "will reach you" radius around the pedestrian
-    pass_radius_m: float = 8.0      # GPS: a vehicle passing closer than this is a conflict
+    pass_radius_m: float = 8.0      # GPS: base pass radius; a vehicle passing closer is a conflict
+    pass_k: float = 0.5             # pass radius grows by pass_k x combined GPS error (m)
+    vehicle_gps_acc_m: float = 4.0  # assumed horizontal RMS error of beacon GPS (packet has no accuracy)
+    pedestrian_gps_acc_m: float = 4.0  # used when the pose carries no accuracy
     aware_dist_m: float = 35.0
-    warn_ttr_s: float = 6.0
-    urgent_ttr_s: float = 3.0
+    warn_ttr_s: float = 6.0         # minimum warn threshold (s); see warn_thresholds()
+    urgent_ttr_s: float = 3.0       # urgent threshold at warn_ttr_s; scales with the warn threshold
+    road_width_m: float = 7.0       # crossing-aware warning: road to cross
+    walk_speed_mps: float = 1.0     # user setting: slow 0.7 / normal 1.0 / fast 1.3
+    crossing_margin_s: float = 2.0  # warn when ttr <= crossing time + margin
     urgent_dist_m: float = 6.0      # close + approaching -> urgent regardless of ttr
-    hysteresis_s: float = 1.0       # exit thresholds are this much looser
+    hysteresis_s: float = 1.0       # exit time thresholds are this much looser (seconds)
+    hysteresis_m: float = 2.0       # exit distance thresholds are this much looser (metres)
     hold_s: float = 1.5             # lower level must persist this long before downgrade
+    warn_hold_s: float = 2.0        # a WARN/URGENT is held at least this long after it is raised
     min_approach_mps: float = 0.8   # RSSI-only: closing speed needed to count as approaching
     moving_mps: float = 0.5         # below this a vehicle is "parked"
-    alert_repeat_s: float = 4.0     # min interval between events of the same level per track
+    alert_repeat_s: float = 4.0     # unused since v1.1 (every re-escalation alerts); kept for config compatibility
     bus_announce_dist_m: float = 30.0
     infra_announce_dist_m: float = 12.0
     infra_reannounce_s: float = 120.0
@@ -67,6 +75,7 @@ class Track:
     rate: float = 0.0               # d(dist)/dt, negative = approaching
     level: int = IGNORE
     lower_since: float = -1.0
+    warn_since: float = -1.0        # when the track last rose to WARN or above
     last_alert_t: List[float] = field(default_factory=lambda: [-1e9] * 4)
     announced: bool = False
     last_announce_t: float = -1e9
@@ -186,12 +195,30 @@ class Receiver:
     def __init__(self, cfg: Optional[Config] = None):
         self.cfg = cfg or Config()
         self.tracks: Dict[str, Track] = {}
-        self.pose = None   # (lat, lon, heading_deg)
+        self.pose = None   # (lat, lon, heading_deg, accuracy_m or None)
         self.packets_rejected = 0
 
     # inputs ---------------------------------------------------------------
-    def set_pose(self, lat: float, lon: float, heading_deg: float):
-        self.pose = (lat, lon, heading_deg)
+    def set_pose(self, lat: float, lon: float, heading_deg: float, acc_m: Optional[float] = None):
+        self.pose = (lat, lon, heading_deg, acc_m)
+
+    def warn_thresholds(self):
+        """Crossing-aware thresholds: warn = max(warn_ttr_s, road/walk + margin); urgent scales with it."""
+        cfg = self.cfg
+        crossing = cfg.road_width_m / cfg.walk_speed_mps
+        a = crossing + cfg.crossing_margin_s
+        warn = cfg.warn_ttr_s if cfg.warn_ttr_s >= a else a
+        urgent = cfg.urgent_ttr_s * warn / cfg.warn_ttr_s
+        return warn, urgent
+
+    def pass_radius(self) -> float:
+        """Pass radius grown by the combined position uncertainty of vehicle and pedestrian."""
+        cfg = self.cfg
+        ped = cfg.pedestrian_gps_acc_m
+        if self.pose is not None and self.pose[3] is not None:
+            ped = self.pose[3]
+        sigma = math.sqrt(cfg.vehicle_gps_acc_m * cfg.vehicle_gps_acc_m + ped * ped)
+        return cfg.pass_radius_m + cfg.pass_k * sigma
 
     def process_payload(self, t: float, rssi: float, payload: bytes) -> List[dict]:
         try:
@@ -256,13 +283,13 @@ class Receiver:
         del self.tracks[oldest]
 
     def _geometry(self, tr: Track):
-        """Returns (dist, ttr or None, side, approaching, moving)."""
+        """Returns (dist, ttr or None, side, approaching, moving, closing)."""
         cfg, p = self.cfg, tr.pkt
         speed = p.speed_mps
         heading = p.heading_deg
         moving = speed is None or speed >= cfg.moving_mps
         if cfg.use_position and p.has_position and p.gps_valid and self.pose is not None:
-            plat, plon, phead = self.pose
+            plat, plon, phead, _acc = self.pose
             rx, ry = enu_offset(plat, plon, p.lat_e7 / 1e7, p.lon_e7 / 1e7)
             dist = math.sqrt(rx * rx + ry * ry)
             bearing = math.degrees(math.atan2(rx, ry))
@@ -274,17 +301,19 @@ class Receiver:
             side = side_of(rel)
             ttr = None
             approaching = False
+            closing = False
             if speed is not None and heading is not None and speed >= cfg.moving_mps:
                 h = math.radians(heading)
                 vx, vy = speed * math.sin(h), speed * math.cos(h)
                 tc = -(rx * vx + ry * vy) / (speed * speed)
                 if tc > 0.0:
+                    closing = True          # distance still decreasing
                     cx, cy = rx + vx * tc, ry + vy * tc
                     cpa = math.sqrt(cx * cx + cy * cy)
-                    if cpa <= cfg.pass_radius_m:
+                    if cpa <= self.pass_radius():
                         approaching = True
                         ttr = tc
-            return dist, ttr, side, approaching, moving
+            return dist, ttr, side, approaching, moving, closing
         # RSSI-only
         dist = tr.dist
         approach = -tr.rate
@@ -295,19 +324,19 @@ class Receiver:
             ttr = (dist - cfg.danger_radius_m) / rate
             if ttr < 0.0:
                 ttr = 0.0
-        return dist, ttr, "unknown", approaching, moving
+        return dist, ttr, "unknown", approaching, moving, approaching
 
-    def _level_for(self, dist, ttr, approaching, moving, margin):
+    def _level_for(self, dist, ttr, approaching, moving, margin_s, margin_m, warn, urgent):
         cfg = self.cfg
         if not moving:
             return IGNORE
-        if ttr is not None and ttr <= cfg.urgent_ttr_s + margin:
+        if ttr is not None and ttr <= urgent + margin_s:
             return URGENT
-        if approaching and dist <= cfg.urgent_dist_m + margin:
+        if approaching and dist <= cfg.urgent_dist_m + margin_m:
             return URGENT
-        if ttr is not None and ttr <= cfg.warn_ttr_s + margin:
+        if ttr is not None and ttr <= warn + margin_s:
             return WARN
-        if dist <= cfg.aware_dist_m + margin * 5.0:
+        if dist <= cfg.aware_dist_m + margin_m:
             return AWARE
         return IGNORE
 
@@ -328,7 +357,7 @@ class Receiver:
                 events.append(self._event(tr, t, "place", 0, "unknown", None, en, ar))
             return events
 
-        dist, ttr, side, approaching, moving = self._geometry(tr)
+        dist, ttr, side, approaching, moving, closing = self._geometry(tr)
         tr.side, tr.ttr, tr.geo_dist = side, ttr, dist
 
         if p.type == "bus" and not tr.announced and dist <= cfg.bus_announce_dist_m and (
@@ -338,24 +367,31 @@ class Receiver:
             en, ar = bus_text(p.route, p.door, side)
             events.append(self._event(tr, t, "bus_arriving", 0, side, None, en, ar))
 
-        enter = self._level_for(dist, ttr, approaching, moving, 0.0)
-        stay = self._level_for(dist, ttr, approaching, moving, cfg.hysteresis_s)
+        warn, urgent = self.warn_thresholds()
+        enter = self._level_for(dist, ttr, approaching, moving, 0.0, 0.0, warn, urgent)
+        stay = self._level_for(dist, ttr, approaching, moving, cfg.hysteresis_s, cfg.hysteresis_m, warn, urgent)
+        # minimum warn hold: a raised WARN does not drop out while the vehicle is still closing
+        # (time to closest approach > 0) or within warn_hold_s of being raised
+        if tr.level >= WARN and stay < WARN and moving and (closing or t - tr.warn_since < cfg.warn_hold_s):
+            stay = WARN
         if p.type == "bus" and p.braking:
             # a bus braking (into a stop) is expected, not a threat: cap at aware
             enter, stay = min(enter, AWARE), min(stay, AWARE)
         if enter > tr.level:
+            # every upward transition alerts, including re-escalation after a drop
+            if enter >= WARN and tr.level < WARN:
+                tr.warn_since = t
             tr.level = enter
             tr.lower_since = -1.0
-            if t - tr.last_alert_t[enter] >= cfg.alert_repeat_s:
-                tr.last_alert_t[enter] = t
-                seconds = None
-                if enter >= WARN and ttr is not None:
-                    seconds = round_half_up(ttr)
-                    if seconds < 1:
-                        seconds = 1
-                en, ar = vehicle_text(enter, p.type, p.speed_mps, side, seconds)
-                events.append(self._event(tr, t, "vehicle_" + LEVEL_NAMES[enter], enter, side,
-                                          seconds, en, ar))
+            tr.last_alert_t[enter] = t
+            seconds = None
+            if enter >= WARN and ttr is not None:
+                seconds = round_half_up(ttr)
+                if seconds < 1:
+                    seconds = 1
+            en, ar = vehicle_text(enter, p.type, p.speed_mps, side, seconds)
+            events.append(self._event(tr, t, "vehicle_" + LEVEL_NAMES[enter], enter, side,
+                                      seconds, en, ar))
         elif stay < tr.level:
             if tr.lower_since < 0.0:
                 tr.lower_since = t
@@ -382,7 +418,7 @@ def run_trace(trace: dict) -> List[dict]:
     out: List[dict] = []
     for ev in trace["events"]:
         if ev["k"] == "pose":
-            rx.set_pose(ev["lat"], ev["lon"], ev["heading"])
+            rx.set_pose(ev["lat"], ev["lon"], ev["heading"], ev.get("acc"))
         elif ev["k"] == "pkt":
             out += rx.process_payload(ev["t"], ev["rssi"], bytes.fromhex(ev["hex"]))
         elif ev["k"] == "tick":

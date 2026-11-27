@@ -13,8 +13,10 @@ const EARTH_R = 6371008.8;
 
 export interface Config {
   tx_power_1m: number; path_loss_n: number; rssi_alpha: number; ab_alpha: number; ab_beta: number;
-  stale_s: number; forget_s: number; danger_radius_m: number; pass_radius_m: number; aware_dist_m: number;
-  warn_ttr_s: number; urgent_ttr_s: number; urgent_dist_m: number; hysteresis_s: number; hold_s: number;
+  stale_s: number; forget_s: number; danger_radius_m: number; pass_radius_m: number; pass_k: number;
+  vehicle_gps_acc_m: number; pedestrian_gps_acc_m: number; aware_dist_m: number;
+  warn_ttr_s: number; urgent_ttr_s: number; road_width_m: number; walk_speed_mps: number; crossing_margin_s: number;
+  urgent_dist_m: number; hysteresis_s: number; hysteresis_m: number; hold_s: number; warn_hold_s: number;
   min_approach_mps: number; moving_mps: number; alert_repeat_s: number; bus_announce_dist_m: number;
   infra_announce_dist_m: number; infra_reannounce_s: number; require_mac: boolean; use_position: boolean;
   fleet_key: Uint8Array | null; max_tracks: number;
@@ -22,8 +24,10 @@ export interface Config {
 
 export const DEFAULT_CONFIG: Config = {
   tx_power_1m: -50.0, path_loss_n: 2.2, rssi_alpha: 0.3, ab_alpha: 0.35, ab_beta: 0.06,
-  stale_s: 2.5, forget_s: 30.0, danger_radius_m: 3.0, pass_radius_m: 8.0, aware_dist_m: 35.0,
-  warn_ttr_s: 6.0, urgent_ttr_s: 3.0, urgent_dist_m: 6.0, hysteresis_s: 1.0, hold_s: 1.5,
+  stale_s: 2.5, forget_s: 30.0, danger_radius_m: 3.0, pass_radius_m: 8.0, pass_k: 0.5,
+  vehicle_gps_acc_m: 4.0, pedestrian_gps_acc_m: 4.0, aware_dist_m: 35.0,
+  warn_ttr_s: 6.0, urgent_ttr_s: 3.0, road_width_m: 7.0, walk_speed_mps: 1.0, crossing_margin_s: 2.0,
+  urgent_dist_m: 6.0, hysteresis_s: 1.0, hysteresis_m: 2.0, hold_s: 1.5, warn_hold_s: 2.0,
   min_approach_mps: 0.8, moving_mps: 0.5, alert_repeat_s: 4.0, bus_announce_dist_m: 30.0,
   infra_announce_dist_m: 12.0, infra_reannounce_s: 120.0, require_mac: false, use_position: true,
   fleet_key: null, max_tracks: 32,
@@ -37,7 +41,7 @@ export interface AlertEvent {
 
 export interface Track {
   id: string; type: BeaconType; first_t: number; last_t: number; packets: number;
-  rssi_ema: number; dist: number; rate: number; level: Level; lower_since: number;
+  rssi_ema: number; dist: number; rate: number; level: Level; lower_since: number; warn_since: number;
   last_alert_t: number[]; announced: boolean; last_announce_t: number; pkt: Packet; verified: boolean;
   side: Side; ttr: number | null; geo_dist: number | null;
 }
@@ -116,12 +120,31 @@ export const placeText = (vtype: string, name: string): [string, string] => [`${
 export class Receiver {
   cfg: Config;
   tracks = new Map<string, Track>();
-  pose: [number, number, number] | null = null;
+  pose: [number, number, number, number | null] | null = null;
   packetsRejected = 0;
 
   constructor(cfg: Partial<Config> = {}) { this.cfg = { ...DEFAULT_CONFIG, ...cfg }; }
 
-  setPose(lat: number, lon: number, headingDeg: number): void { this.pose = [lat, lon, headingDeg]; }
+  setPose(lat: number, lon: number, headingDeg: number, accM: number | null = null): void { this.pose = [lat, lon, headingDeg, accM]; }
+
+  /** Crossing-aware thresholds: warn = max(warn_ttr_s, road/walk + margin); urgent scales with it. */
+  warnThresholds(): [number, number] {
+    const cfg = this.cfg;
+    const crossing = cfg.road_width_m / cfg.walk_speed_mps;
+    const a = crossing + cfg.crossing_margin_s;
+    const warn = cfg.warn_ttr_s >= a ? cfg.warn_ttr_s : a;
+    const urgent = cfg.urgent_ttr_s * warn / cfg.warn_ttr_s;
+    return [warn, urgent];
+  }
+
+  /** Pass radius grown by the combined position uncertainty of vehicle and pedestrian. */
+  passRadius(): number {
+    const cfg = this.cfg;
+    let ped = cfg.pedestrian_gps_acc_m;
+    if (this.pose !== null && this.pose[3] !== null) ped = this.pose[3];
+    const sigma = Math.sqrt(cfg.vehicle_gps_acc_m * cfg.vehicle_gps_acc_m + ped * ped);
+    return cfg.pass_radius_m + cfg.pass_k * sigma;
+  }
 
   processPayload(t: number, rssi: number, payload: Uint8Array): AlertEvent[] {
     let p: Packet;
@@ -145,7 +168,7 @@ export class Receiver {
       if (this.tracks.size >= cfg.max_tracks) this.evict();
       tr = {
         id: p.rolling_id, type: p.type, first_t: t, last_t: t, packets: 0, rssi_ema: rssi,
-        dist: rssiToDistance(rssi, cfg), rate: 0.0, level: IGNORE, lower_since: -1.0,
+        dist: rssiToDistance(rssi, cfg), rate: 0.0, level: IGNORE, lower_since: -1.0, warn_since: -1.0,
         last_alert_t: [-1e9, -1e9, -1e9, -1e9], announced: false, last_announce_t: -1e9, pkt: p,
         verified, side: "unknown", ttr: null, geo_dist: null,
       };
@@ -184,7 +207,7 @@ export class Receiver {
     if (oldestKey !== null) this.tracks.delete(oldestKey);
   }
 
-  private geometry(tr: Track): [number, number | null, Side, boolean, boolean] {
+  private geometry(tr: Track): [number, number | null, Side, boolean, boolean, boolean] {
     const cfg = this.cfg, p = tr.pkt;
     const speed = speedMps(p), heading = headingDeg(p);
     const moving = speed === null || speed >= cfg.moving_mps;
@@ -197,18 +220,19 @@ export class Receiver {
       while (rel > 180.0) rel -= 360.0;
       while (rel <= -180.0) rel += 360.0;
       const side = sideOf(rel);
-      let ttr: number | null = null, approaching = false;
+      let ttr: number | null = null, approaching = false, closing = false;
       if (speed !== null && heading !== null && speed >= cfg.moving_mps) {
         const h = heading * (Math.PI / 180.0);
         const vx = speed * Math.sin(h), vy = speed * Math.cos(h);
         const tc = -(rx * vx + ry * vy) / (speed * speed);
         if (tc > 0.0) {
+          closing = true; // distance still decreasing
           const cx = rx + vx * tc, cy = ry + vy * tc;
           const cpa = Math.sqrt(cx * cx + cy * cy);
-          if (cpa <= cfg.pass_radius_m) { approaching = true; ttr = tc; }
+          if (cpa <= this.passRadius()) { approaching = true; ttr = tc; }
         }
       }
-      return [dist, ttr, side, approaching, moving];
+      return [dist, ttr, side, approaching, moving, closing];
     }
     const dist = tr.dist, approach = -tr.rate;
     let ttr: number | null = null;
@@ -218,16 +242,17 @@ export class Receiver {
       ttr = (dist - cfg.danger_radius_m) / rate;
       if (ttr < 0.0) ttr = 0.0;
     }
-    return [dist, ttr, "unknown", approaching, moving];
+    return [dist, ttr, "unknown", approaching, moving, approaching];
   }
 
-  private levelFor(dist: number, ttr: number | null, approaching: boolean, moving: boolean, margin: number): Level {
+  private levelFor(dist: number, ttr: number | null, approaching: boolean, moving: boolean,
+    marginS: number, marginM: number, warn: number, urgent: number): Level {
     const cfg = this.cfg;
     if (!moving) return IGNORE;
-    if (ttr !== null && ttr <= cfg.urgent_ttr_s + margin) return URGENT;
-    if (approaching && dist <= cfg.urgent_dist_m + margin) return URGENT;
-    if (ttr !== null && ttr <= cfg.warn_ttr_s + margin) return WARN;
-    if (dist <= cfg.aware_dist_m + margin * 5.0) return AWARE;
+    if (ttr !== null && ttr <= urgent + marginS) return URGENT;
+    if (approaching && dist <= cfg.urgent_dist_m + marginM) return URGENT;
+    if (ttr !== null && ttr <= warn + marginS) return WARN;
+    if (dist <= cfg.aware_dist_m + marginM) return AWARE;
     return IGNORE;
   }
 
@@ -247,7 +272,7 @@ export class Receiver {
       }
       return events;
     }
-    const [dist, ttr, side, approaching, moving] = this.geometry(tr);
+    const [dist, ttr, side, approaching, moving, closing] = this.geometry(tr);
     tr.side = side; tr.ttr = ttr; tr.geo_dist = dist;
     const sp = speedMps(p);
     if (p.type === "bus" && !tr.announced && dist <= cfg.bus_announce_dist_m && (approaching || (sp !== null && sp < 3.0))) {
@@ -255,19 +280,23 @@ export class Receiver {
       const [en, ar] = busText(p.route ?? "", p.door ?? "unknown", side);
       events.push(this.ev(tr, t, "bus_arriving", 0, side, null, en, ar));
     }
-    let enter = this.levelFor(dist, ttr, approaching, moving, 0.0);
-    let stay = this.levelFor(dist, ttr, approaching, moving, cfg.hysteresis_s);
+    const [warn, urgent] = this.warnThresholds();
+    let enter = this.levelFor(dist, ttr, approaching, moving, 0.0, 0.0, warn, urgent);
+    let stay = this.levelFor(dist, ttr, approaching, moving, cfg.hysteresis_s, cfg.hysteresis_m, warn, urgent);
+    // minimum warn hold: a raised WARN does not drop out while the vehicle is still closing
+    // (time to closest approach > 0) or within warn_hold_s of being raised
+    if (tr.level >= WARN && stay < WARN && moving && (closing || t - tr.warn_since < cfg.warn_hold_s)) stay = WARN;
     // a bus braking (into a stop) is expected, not a threat: cap at aware
     if (p.type === "bus" && p.braking) { enter = Math.min(enter, AWARE) as Level; stay = Math.min(stay, AWARE) as Level; }
     if (enter > tr.level) {
+      // every upward transition alerts, including re-escalation after a drop
+      if (enter >= WARN && tr.level < WARN) tr.warn_since = t;
       tr.level = enter; tr.lower_since = -1.0;
-      if (t - tr.last_alert_t[enter] >= cfg.alert_repeat_s) {
-        tr.last_alert_t[enter] = t;
-        let seconds: number | null = null;
-        if (enter >= WARN && ttr !== null) { seconds = roundHalfUp(ttr); if (seconds < 1) seconds = 1; }
-        const [en, ar] = vehicleText(enter, p.type, sp, side, seconds);
-        events.push(this.ev(tr, t, ("vehicle_" + LEVEL_NAMES[enter]) as EventKind, enter, side, seconds, en, ar));
-      }
+      tr.last_alert_t[enter] = t;
+      let seconds: number | null = null;
+      if (enter >= WARN && ttr !== null) { seconds = roundHalfUp(ttr); if (seconds < 1) seconds = 1; }
+      const [en, ar] = vehicleText(enter, p.type, sp, side, seconds);
+      events.push(this.ev(tr, t, ("vehicle_" + LEVEL_NAMES[enter]) as EventKind, enter, side, seconds, en, ar));
     } else if (stay < tr.level) {
       if (tr.lower_since < 0.0) tr.lower_since = t;
       else if (t - tr.lower_since >= cfg.hold_s) { tr.level = stay; tr.lower_since = -1.0; }
@@ -285,7 +314,7 @@ export class Receiver {
   }
 }
 
-export interface TraceEvent { k: "pose" | "pkt" | "tick"; t: number; lat?: number; lon?: number; heading?: number; rssi?: number; hex?: string }
+export interface TraceEvent { k: "pose" | "pkt" | "tick"; t: number; lat?: number; lon?: number; heading?: number; acc?: number | null; rssi?: number; hex?: string }
 export interface Trace { name: string; config: Record<string, unknown>; events: TraceEvent[]; expected?: AlertEvent[] }
 
 /** Run a cross-language trace (tests/traces/*.json). */
@@ -296,7 +325,7 @@ export function runTrace(trace: Trace): AlertEvent[] {
   const rx = new Receiver(c);
   const out: AlertEvent[] = [];
   for (const e of trace.events) {
-    if (e.k === "pose") rx.setPose(e.lat!, e.lon!, e.heading!);
+    if (e.k === "pose") rx.setPose(e.lat!, e.lon!, e.heading!, e.acc ?? null);
     else if (e.k === "pkt") out.push(...rx.processPayload(e.t, e.rssi!, hexToBytes(e.hex!)));
     else out.push(...rx.tick(e.t));
   }

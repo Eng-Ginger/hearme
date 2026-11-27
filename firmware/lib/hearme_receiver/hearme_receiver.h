@@ -35,16 +35,24 @@ typedef struct {
     double stale_s;              /* 2.5   no packet for this long -> ignore */
     double forget_s;             /* 30.0  drop the track entirely */
     double danger_radius_m;      /* 3.0   RSSI-only "will reach you" radius */
-    double pass_radius_m;        /* 8.0   GPS: passing closer than this is a conflict */
+    double pass_radius_m;        /* 8.0   GPS: base pass radius */
+    double pass_k;               /* 0.5   pass radius += pass_k * combined GPS error */
+    double vehicle_gps_acc_m;    /* 4.0   assumed beacon GPS horizontal RMS (m) */
+    double pedestrian_gps_acc_m; /* 4.0   used when the pose has no accuracy */
     double aware_dist_m;         /* 35.0 */
-    double warn_ttr_s;           /* 6.0 */
-    double urgent_ttr_s;         /* 3.0 */
+    double warn_ttr_s;           /* 6.0   minimum warn threshold */
+    double urgent_ttr_s;         /* 3.0   urgent threshold at warn_ttr_s; scales with warn */
+    double road_width_m;         /* 7.0   crossing-aware warning */
+    double walk_speed_mps;       /* 1.0   slow 0.7 / normal 1.0 / fast 1.3 */
+    double crossing_margin_s;    /* 2.0 */
     double urgent_dist_m;        /* 6.0   close + approaching -> urgent */
-    double hysteresis_s;         /* 1.0   exit thresholds are this much looser */
+    double hysteresis_s;         /* 1.0   exit time thresholds looser by (s) */
+    double hysteresis_m;         /* 2.0   exit distance thresholds looser by (m) */
     double hold_s;               /* 1.5   lower level must persist this long */
+    double warn_hold_s;          /* 2.0   WARN/URGENT held at least this long */
     double min_approach_mps;     /* 0.8   RSSI-only closing speed */
     double moving_mps;           /* 0.5   below this a vehicle is parked */
-    double alert_repeat_s;       /* 4.0   min interval between same-level events */
+    double alert_repeat_s;       /* 4.0   unused since v1.1 (every re-escalation alerts) */
     double bus_announce_dist_m;  /* 30.0 */
     double infra_announce_dist_m;/* 12.0 */
     double infra_reannounce_s;   /* 120.0 */
@@ -80,6 +88,7 @@ typedef struct {
     double   rssi_ema, dist, rate;
     int      level;
     double   lower_since;
+    double   warn_since;           /* when the track last rose to WARN or above */
     double   last_alert_t[4];
     int      announced;
     double   last_announce_t;
@@ -101,7 +110,11 @@ void hm_rx_default_config(hm_rx_config_t *cfg);
 /* Reset the receiver. cfg may be NULL for defaults. */
 void hm_rx_init(const hm_rx_config_t *cfg);
 const hm_rx_config_t *hm_rx_config(void);
-void hm_rx_set_pose(double lat, double lon, double heading_deg);
+void hm_rx_set_pose(double lat, double lon, double heading_deg);          /* accuracy unknown */
+void hm_rx_set_pose_acc(double lat, double lon, double heading_deg, double acc_m);
+/* Crossing-aware thresholds (s) and the current adaptive pass radius (m). */
+void hm_rx_warn_thresholds(double *warn, double *urgent);
+double hm_rx_pass_radius(void);
 /* Feed one manufacturer-data payload (bytes after the company ID).
  * Returns number of events written to out (<= max). */
 int  hm_rx_process_payload(double t, double rssi, const uint8_t *payload, size_t len,

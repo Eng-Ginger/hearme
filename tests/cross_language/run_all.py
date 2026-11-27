@@ -92,7 +92,7 @@ def write_txt(trace, path):
                 f.write(f"CFG {k} {int(v) if isinstance(v, bool) else v!r}" + nl)
         for e in trace["events"]:
             if e["k"] == "pose":
-                f.write(f"POSE {e['lat']!r} {e['lon']!r} {e['heading']!r}" + nl)
+                f.write(f"POSE {e['lat']!r} {e['lon']!r} {e['heading']!r}" + (f" {e['acc']!r}" if e.get('acc') is not None else "") + nl)
             elif e["k"] == "pkt":
                 f.write(f"PKT {e['t']!r} {e['rssi']} {e['hex']}" + nl)
             else:

@@ -152,9 +152,9 @@ static void test_escalation_aware_warn_urgent(void) {
     TEST_ASSERT_EQUAL_STRING("Electric bike nearby, from your left", g_ev[0].text_en);
     TEST_ASSERT_EQUAL_STRING("دراجة كهربائية بالقرب منك، من يسارك", g_ev[0].text_ar);
     TEST_ASSERT_TRUE(g_ev[1].has_seconds);
-    TEST_ASSERT_TRUE(g_ev[1].seconds == 6 || g_ev[1].seconds == 5);
+    TEST_ASSERT_TRUE(g_ev[1].seconds == 9 || g_ev[1].seconds == 8);   /* v1.1: warn = 7 m / 1.0 m/s + 2 s = 9 s */
     TEST_ASSERT_TRUE(g_ev[2].has_seconds);
-    TEST_ASSERT_TRUE(g_ev[2].seconds == 3 || g_ev[2].seconds == 2);
+    TEST_ASSERT_TRUE(g_ev[2].seconds == 5 || g_ev[2].seconds == 4);   /* urgent scales to 4.5 s */
     TEST_ASSERT_TRUE(strncmp(g_ev[2].text_en, "Stop! Electric bike, from your left, ", 37) == 0);
     TEST_ASSERT_TRUE(strncmp(g_ev[2].text_ar, "توقف! ", strlen("توقف! ")) == 0);
     TEST_ASSERT_EQUAL_INT(HM_LVL_URGENT, find_track(RID_A)->level);
@@ -164,25 +164,25 @@ static void test_hysteresis_hold_then_downgrade(void) {
     double t;
     const hm_rx_track_t *tr;
     rx_reset(0, 1);
-    t = approach_until(-9.0);
+    t = approach_until(-12.0);
     tr = find_track(RID_A);
     TEST_ASSERT_NOT_NULL(tr);
     TEST_ASSERT_EQUAL_INT(HM_LVL_URGENT, tr->level);
     g_nev = 0;
-    /* vehicle now turns north (no longer approaching) but stays 9 m away: enter/stay = AWARE */
-    t += 0.1; feed(t, HM_E_BIKE, RID_A, -9.0, 0.0, 3.0, 0.0, HM_TEST_FLEET_KEY);   /* lower_since = t */
+    /* vehicle turns north-west (moving away), stays 12 m away (outside the 10.8 m adaptive pass radius) */
+    t += 0.1; feed(t, HM_E_BIKE, RID_A, -12.0, 0.0, 3.0, 330.0, HM_TEST_FLEET_KEY);   /* lower_since = t */
     {
         double t_lower = t;
-        while (t < t_lower + 1.4) { t += 0.1; feed(t, HM_E_BIKE, RID_A, -9.0, 0.0, 3.0, 0.0, HM_TEST_FLEET_KEY); }
+        while (t < t_lower + 1.4) { t += 0.1; feed(t, HM_E_BIKE, RID_A, -12.0, 0.0, 3.0, 330.0, HM_TEST_FLEET_KEY); }
         TEST_ASSERT_EQUAL_INT(HM_LVL_URGENT, tr->level);       /* held for < hold_s */
-        t = t_lower + 1.6; feed(t, HM_E_BIKE, RID_A, -9.0, 0.0, 3.0, 0.0, HM_TEST_FLEET_KEY);
+        t = t_lower + 1.6; feed(t, HM_E_BIKE, RID_A, -12.0, 0.0, 3.0, 330.0, HM_TEST_FLEET_KEY);
         TEST_ASSERT_EQUAL_INT(HM_LVL_AWARE, tr->level);        /* downgraded after hold_s */
     }
     TEST_ASSERT_EQUAL_INT(0, g_nev);                            /* downgrades never emit */
 }
 
 static void test_hysteresis_band_keeps_level(void) {
-    /* RSSI-only aware band: enter at <= 35 m, stay while <= 35 + 5 * hysteresis */
+    /* RSSI-only aware band: enter at <= 35 m, stay while <= 35 + hysteresis_m (2 m) */
     double t = T0;
     int i;
     const hm_rx_track_t *tr;
@@ -191,9 +191,9 @@ static void test_hysteresis_band_keeps_level(void) {
     tr = find_track(RID_A);
     TEST_ASSERT_EQUAL_INT(HM_LVL_AWARE, tr->level);
     TEST_ASSERT_EQUAL_INT(1, g_nev);
-    /* drift out to ~39 m: inside the stay band, level kept for well over hold_s */
-    for (i = 0; i < 60; i++, t += 0.1) feed(t, HM_E_BIKE, RID_A, -40.0, 0.0, 3.0, 90.0, HM_TEST_FLEET_KEY);
-    TEST_ASSERT_TRUE(tr->dist > 35.0 && tr->dist < 40.0);
+    /* drift out to ~36.5 m: inside the stay band, level kept for well over hold_s */
+    for (i = 0; i < 60; i++, t += 0.1) feed(t, HM_E_BIKE, RID_A, -36.5, 0.0, 3.0, 90.0, HM_TEST_FLEET_KEY);
+    TEST_ASSERT_TRUE(tr->dist > 35.0 && tr->dist < 37.0);
     TEST_ASSERT_EQUAL_INT(HM_LVL_AWARE, tr->level);
     TEST_ASSERT_EQUAL_INT(1, g_nev);
 }
