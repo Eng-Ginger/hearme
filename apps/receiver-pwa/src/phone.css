@@ -1,0 +1,44 @@
+/* High-contrast, large-text phone UI. Yellow on black is a common low-vision preference. */
+.hm-phone {
+  --fg: #fff; --bg: #000; --accent: #ffd400; --warn: #ff9f0a; --urgent: #ff3b30; --bus: #32d4ff;
+  box-sizing: border-box; display: flex; flex-direction: column; gap: 14px;
+  width: 100%; height: 100%; padding: 18px 16px 14px; background: var(--bg); color: var(--fg);
+  font-family: "Segoe UI", "Noto Sans Arabic", Tahoma, system-ui, sans-serif; overflow: hidden;
+}
+.hm-phone *, .hm-phone *::before { box-sizing: border-box; }
+.hm-top { display: flex; align-items: center; justify-content: space-between; }
+.hm-top h1 { margin: 0; font-size: 30px; font-weight: 800; color: var(--accent); letter-spacing: 0.5px; }
+.hm-lang { font: inherit; font-size: 17px; font-weight: 700; color: var(--bg); background: var(--accent); border: 0; border-radius: 12px; padding: 8px 14px; cursor: pointer; }
+.hm-listen {
+  position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  min-height: 210px; border-radius: 28px; border: 4px solid var(--accent); cursor: pointer; font: inherit;
+  background: #111; color: var(--fg); overflow: hidden;
+}
+.hm-listen.on { background: var(--accent); color: #000; }
+.hm-listen:focus-visible, .hm-lang:focus-visible { outline: 4px solid #fff; outline-offset: 3px; }
+.hm-listen-label { font-size: 46px; font-weight: 900; line-height: 1.1; }
+.hm-listen-sub { font-size: 18px; font-weight: 600; margin-top: 6px; opacity: 0.85; }
+.hm-ring { position: absolute; inset: 0; border-radius: 24px; pointer-events: none; animation: hm-ring 0.9s ease-out; }
+@keyframes hm-ring { from { box-shadow: inset 0 0 0 0 rgba(0,0,0,.55); } to { box-shadow: inset 0 0 0 40px rgba(0,0,0,0); } }
+.hm-alert { border-radius: 20px; padding: 14px 16px; min-height: 128px; background: #1a1a1a; border: 3px solid #444; }
+.hm-alert.lvl-warn { border-color: var(--warn); background: #2b1a00; }
+.hm-alert.lvl-urgent { border-color: var(--urgent); background: #3a0400; animation: hm-pulse 0.5s ease-in-out 3; }
+.hm-alert.lvl-bus { border-color: var(--bus); background: #002633; }
+@keyframes hm-pulse { 50% { background: #7a0a00; } }
+.hm-alert-cap { font-size: 15px; font-weight: 700; text-transform: uppercase; opacity: 0.8; letter-spacing: 1px; }
+.hm-alert-text { font-size: 27px; font-weight: 800; line-height: 1.2; margin-top: 6px; }
+.hm-history { flex: 1; min-height: 0; overflow: hidden; }
+.hm-history h2 { margin: 0 0 6px; font-size: 16px; text-transform: uppercase; letter-spacing: 1px; color: var(--accent); }
+.hm-history ul { list-style: none; margin: 0; padding: 0; }
+.hm-history li { font-size: 17px; padding: 7px 0; border-bottom: 1px solid #333; }
+.hm-foot { display: flex; flex-direction: column; gap: 6px; font-size: 14px; }
+.hm-toggle { display: flex; gap: 8px; align-items: center; font-size: 17px; font-weight: 600; }
+.hm-toggle input { width: 22px; height: 22px; accent-color: var(--accent); }
+.hm-src { opacity: 0.7; }
+.hm-src.live { color: #7dff9a; opacity: 1; }
+.hm-phone.embedded { padding: 14px 12px 10px; gap: 10px; }
+.hm-phone.embedded .hm-listen { min-height: 150px; }
+.hm-phone.embedded .hm-listen-label { font-size: 36px; }
+.hm-phone.embedded .hm-alert-text { font-size: 21px; }
+.hm-phone.embedded .hm-alert { min-height: 104px; }
+.hm-phone.embedded .hm-history li { font-size: 14px; padding: 5px 0; }
