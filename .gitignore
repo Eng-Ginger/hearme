@@ -10,3 +10,19 @@ __pycache__/
 apps/dashboard/api/data/*.db
 test-results/
 playwright-report/
+
+# personal copies of the generated PDFs (kept local only)
+docs/*.pdf
+docs/submission/*.html
+
+# env / deploy / tooling
+.env
+.env.*
+.vercel/
+deploy/
+local.properties
+apps/android-rider-sdk/**/build/
+apps/android-rider-sdk/.gradle/
+*.apk
+*.log
+*.tmp

@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "build:static": "vite build --mode static --base /dashboard/ --outDir ../../lab/dist/dashboard --emptyOutDir"
   },
   "dependencies": {
     "leaflet": "1.9.4",

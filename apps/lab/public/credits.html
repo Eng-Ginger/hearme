@@ -1,0 +1,161 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1"><title>HearMe Lab: credits</title>
+<style>body{font-family:"Segoe UI",system-ui,sans-serif;max-width:980px;margin:32px auto;padding:0 20px;line-height:1.5;color:#1d1d1f}
+table{border-collapse:collapse;width:100%;font-size:14px;margin:10px 0 22px}th,td{border:1px solid #ddd;padding:6px 8px;text-align:left;vertical-align:top}
+th{background:#f4efd9}a{color:#0b4f9c;word-break:break-all}h1{border-bottom:3px solid #f2c200;padding-bottom:6px}</style></head>
+<body><p><a href="/">← Back to HearMe Lab</a></p><h1>Attribution</h1>
+<h2>Audio</h2>
+<p>No audio files are used. Every sound in the HearMe Lab is synthesised at runtime with the Web Audio API
+(<code>src/audio/audio.ts</code>):</p>
+<table>
+<thead>
+<tr>
+<th>Sound</th>
+<th>How it is made</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Street ambience</td>
+<td>Low-passed white noise (two decorrelated sources, wide stereo) + band-passed noise "wind" with a slow LFO</td>
+</tr>
+<tr>
+<td>Birds (day) / crickets (night)</td>
+<td>Short sine chirps with exponential frequency sweeps, placed at random 3D positions</td>
+</tr>
+<tr>
+<td>Petrol motorbike, car, bus engines</td>
+<td>Sawtooth + square oscillators at a speed-dependent firing frequency, <code>tanh</code> wave-shaper distortion, low-pass filter</td>
+</tr>
+<tr>
+<td>Tyre / rolling noise</td>
+<td>Band-passed noise whose level and centre frequency follow speed (very quiet for e-bikes and e-scooters)</td>
+</tr>
+<tr>
+<td>Electric motor whine</td>
+<td>Low-level sine following speed (e-scooter, electric tuk-tuk)</td>
+</tr>
+<tr>
+<td>Bus brake hiss</td>
+<td>High-passed noise while braking below 3 m/s</td>
+</tr>
+<tr>
+<td>AVAS hum (comparison mode)</td>
+<td>Two detuned triangle oscillators (380/571 Hz, pitch rising with speed) with a 6 Hz tremolo</td>
+</tr>
+<tr>
+<td>HearMe earcons</td>
+<td>Short sine/triangle/square beeps through an HRTF <code>PannerNode</code> placed in the vehicle's direction</td>
+</tr>
+</tbody>
+</table>
+<p>Speech uses the browser's Web Speech API voices (installed on the user's operating system).</p>
+<h2>Reference photos (not shipped in the scene; used only as modelling reference)</h2>
+<p>The campus street is modelled after these photos of a university campus in Ajman, UAE. No university
+name or logo is used anywhere in the Lab.</p>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Author</th>
+<th>Licence</th>
+<th>Source</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>reference/ajman_uni/SAA1.jpg</code></td>
+<td>Therealmau</td>
+<td>CC BY-SA 4.0</td>
+<td><a href="https://commons.wikimedia.org/wiki/File:SAA1.jpg">https://commons.wikimedia.org/wiki/File:SAA1.jpg</a></td>
+</tr>
+<tr>
+<td><code>reference/ajman_uni/SAA2.jpg</code></td>
+<td>Therealmau</td>
+<td>CC BY-SA 4.0</td>
+<td><a href="https://commons.wikimedia.org/wiki/File:SAA2.jpg">https://commons.wikimedia.org/wiki/File:SAA2.jpg</a></td>
+</tr>
+<tr>
+<td><code>reference/ajman_uni/SAA3.jpg</code></td>
+<td>Therealmau</td>
+<td>CC BY-SA 4.0</td>
+<td><a href="https://commons.wikimedia.org/wiki/File:SAA3.jpg">https://commons.wikimedia.org/wiki/File:SAA3.jpg</a></td>
+</tr>
+<tr>
+<td><code>reference/ajman_uni/SAA4.jpg</code></td>
+<td>Therealmau</td>
+<td>CC BY-SA 4.0</td>
+<td><a href="https://commons.wikimedia.org/wiki/File:SAA4.jpg">https://commons.wikimedia.org/wiki/File:SAA4.jpg</a></td>
+</tr>
+<tr>
+<td><code>reference/ajman_uni/SAA5.jpg</code></td>
+<td>Therealmau</td>
+<td>CC BY-SA 4.0</td>
+<td><a href="https://commons.wikimedia.org/wiki/File:SAA5.jpg">https://commons.wikimedia.org/wiki/File:SAA5.jpg</a></td>
+</tr>
+<tr>
+<td><code>reference/ajman_uni/SAAU1.jpg</code></td>
+<td>Therealmau</td>
+<td>CC BY-SA 4.0</td>
+<td><a href="https://commons.wikimedia.org/wiki/File:SAAU1.jpg">https://commons.wikimedia.org/wiki/File:SAAU1.jpg</a></td>
+</tr>
+</tbody>
+</table>
+<p>CC BY-SA 4.0: <a href="https://creativecommons.org/licenses/by-sa/4.0/">https://creativecommons.org/licenses/by-sa/4.0/</a> — the derived 3D scene is offered under the same licence terms
+for anything derived from these photos.</p>
+<h2>HDRIs and PBR textures (all CC0)</h2>
+<table>
+<thead>
+<tr>
+<th>Asset</th>
+<th>Author</th>
+<th>Licence</th>
+<th>Source</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>public/assets/polyhaven/</code> asphalt_02 (diffuse_1k, nor_gl_1k, rough_1k)</td>
+<td>Poly Haven</td>
+<td>CC0 1.0</td>
+<td><a href="https://polyhaven.com/a/asphalt_02">https://polyhaven.com/a/asphalt_02</a></td>
+</tr>
+<tr>
+<td><code>public/assets/polyhaven/</code> clay_plaster (diffuse_1k, nor_gl_1k, rough_1k)</td>
+<td>Poly Haven</td>
+<td>CC0 1.0</td>
+<td><a href="https://polyhaven.com/a/clay_plaster">https://polyhaven.com/a/clay_plaster</a></td>
+</tr>
+<tr>
+<td><code>public/assets/polyhaven/</code> coast_sand_01 (diffuse_1k, nor_gl_1k, rough_1k)</td>
+<td>Poly Haven</td>
+<td>CC0 1.0</td>
+<td><a href="https://polyhaven.com/a/coast_sand_01">https://polyhaven.com/a/coast_sand_01</a></td>
+</tr>
+<tr>
+<td><code>public/assets/polyhaven/</code> concrete_pavement (diffuse_1k, nor_gl_1k, rough_1k)</td>
+<td>Poly Haven</td>
+<td>CC0 1.0</td>
+<td><a href="https://polyhaven.com/a/concrete_pavement">https://polyhaven.com/a/concrete_pavement</a></td>
+</tr>
+<tr>
+<td><code>public/assets/polyhaven/</code> qwantani_dusk_2_puresky (1k)</td>
+<td>Poly Haven</td>
+<td>CC0 1.0</td>
+<td><a href="https://polyhaven.com/a/qwantani_dusk_2_puresky">https://polyhaven.com/a/qwantani_dusk_2_puresky</a></td>
+</tr>
+<tr>
+<td><code>public/assets/polyhaven/</code> qwantani_late_afternoon_puresky (1k, 2k)</td>
+<td>Poly Haven</td>
+<td>CC0 1.0</td>
+<td><a href="https://polyhaven.com/a/qwantani_late_afternoon_puresky">https://polyhaven.com/a/qwantani_late_afternoon_puresky</a></td>
+</tr>
+</tbody>
+</table>
+<h2>3D models</h2>
+<p>All vehicles, people, buildings, palms and street furniture are built from three.js primitives in
+<code>src/scene/</code> (Street.tsx, Models.tsx, Students.tsx). Sign textures are drawn at runtime on a <code>&lt;canvas&gt;</code>.
+No third-party models or fonts are used. (Kenney / Quaternius CC0 models were not needed.)</p>
+<h2>Libraries</h2>
+<p>three.js (MIT), @react-three/fiber and @react-three/drei (MIT), React (MIT), Vite (MIT), Playwright (Apache-2.0).</p>
+<p>Team: Mohammed Shehadeh (lead), M. Ghaith Ali, Moundir Mekkaoui · WFEO Hackathon 2027 · Challenge 1: Inclusive Mobility</p></body></html>

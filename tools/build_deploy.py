@@ -1,4 +1,5 @@
-"""Build the static site for Vercel into deploy/hearme-lab/.
+"""Regenerate the static inputs (dashboard JSON, credits page), build the site exactly as Vercel does,
+scan it for secrets and report sizes. Output: apps/lab/dist (copied to deploy/hearme-lab/).
 
 - HearMe Lab (apps/lab): /, /phone.html (same origin, so BroadcastChannel links the phone to the Lab)
 - City dashboard, read-only: /dashboard/ with responses precomputed from the real FastAPI app
@@ -30,18 +31,12 @@ def run(cmd, cwd=ROOT, env=None):
         print(p.stdout[-2000:], p.stderr[-2000:]); sys.exit(f"failed: {' '.join(cmd)}")
 
 
-# 1. Lab (tsc + vite, multi-page: index.html + phone.html)
-run([NPM, "run", "build", "-w", "@hearme/lab"])
-
-# 2. Static dashboard
-dash_out = os.path.join(DIST, "dashboard")
-run([NPX, "vite", "build", "--base", "/dashboard/", "--outDir", dash_out, "--emptyOutDir"],
-    cwd=os.path.join(ROOT, "apps", "dashboard", "web"), env={"VITE_STATIC": "1"})
+# 1. Precompute the read-only dashboard data from the real API (committed, so Vercel needs no Python)
 sys.path.insert(0, ROOT)
 from fastapi.testclient import TestClient  # noqa: E402
 from apps.dashboard.api.main import create_app  # noqa: E402
 
-data = os.path.join(dash_out, "data")
+data = os.path.join(ROOT, "apps", "dashboard", "web", "public", "data")
 os.makedirs(data, exist_ok=True)
 with TestClient(create_app()) as c:
     for hour in [None] + list(range(24)):
@@ -58,7 +53,7 @@ with TestClient(create_app()) as c:
 att = open(os.path.join(LAB, "ATTRIBUTION.md"), encoding="utf-8").read()
 att = re.sub(r"(?<!\()(https?://[^\s|)]+)", r"<\1>", att)
 body = markdown.markdown(att, extensions=["tables"])
-open(os.path.join(DIST, "credits.html"), "w", encoding="utf-8").write(f"""<!doctype html><html lang="en"><head><meta charset="utf-8">
+open(os.path.join(LAB, "public", "credits.html"), "w", encoding="utf-8").write(f"""<!doctype html><html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1"><title>HearMe Lab: credits</title>
 <style>body{{font-family:"Segoe UI",system-ui,sans-serif;max-width:980px;margin:32px auto;padding:0 20px;line-height:1.5;color:#1d1d1f}}
 table{{border-collapse:collapse;width:100%;font-size:14px;margin:10px 0 22px}}th,td{{border:1px solid #ddd;padding:6px 8px;text-align:left;vertical-align:top}}
@@ -66,24 +61,8 @@ th{{background:#f4efd9}}a{{color:#0b4f9c;word-break:break-all}}h1{{border-bottom
 <body><p><a href="/">← Back to HearMe Lab</a></p>{body}
 <p>Team: Mohammed Shehadeh (lead), M. Ghaith Ali, Moundir Mekkaoui · WFEO Hackathon 2027 · Challenge 1: Inclusive Mobility</p></body></html>""")
 
-# 4. vercel.json (static files are served before rewrites, so the fallback only catches unknown paths)
-vercel = {
-    "cleanUrls": True,
-    "trailingSlash": False,
-    "rewrites": [
-        {"source": "/dashboard", "destination": "/dashboard/index.html"},
-        {"source": "/dashboard/(.*)", "destination": "/dashboard/index.html"},
-        {"source": "/(.*)", "destination": "/index.html"},
-    ],
-    "headers": [
-        {"source": "/assets/(.*)", "headers": [{"key": "Cache-Control", "value": "public, max-age=31536000, immutable"}]},
-        {"source": "/dashboard/assets/(.*)", "headers": [{"key": "Cache-Control", "value": "public, max-age=31536000, immutable"}]},
-        {"source": "/assets/polyhaven/(.*)", "headers": [{"key": "Cache-Control", "value": "public, max-age=604800"}]},
-        {"source": "/(.*)\\.hdr", "headers": [{"key": "Content-Type", "value": "application/octet-stream"}]},
-        {"source": "/(.*)\\.webp", "headers": [{"key": "Content-Type", "value": "image/webp"}]},
-    ],
-}
-json.dump(vercel, open(os.path.join(DIST, "vercel.json"), "w"), indent=2)
+# 4. The same build Vercel runs (root vercel.json: npm ci + npm run build:vercel -> apps/lab/dist)
+run([NPM, "run", "build:vercel"])
 
 # 5. Secrets scan
 bad = []
