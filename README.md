@@ -2,6 +2,17 @@
 
 **Electric vehicles are silent. We made them speak.**
 
+**Live demo: <coming soon>** · phone app at `/phone.html` · city dashboard at `/dashboard` · put on headphones, press **D** for the 85 s demo
+
+Run it locally (Node 24, see `.nvmrc`):
+
+```powershell
+npm ci
+npm run dev                # HearMe Lab on http://localhost:5173
+```
+
+Static production build, exactly as Vercel builds it: `npm run build:vercel` → `apps/lab/dist`.
+
 WFEO Hackathon 2027 · Challenge 1: Inclusive Mobility
 Team: Mohammed Shehadeh (lead), M. Ghaith Ali, Moundir Mekkaoui
 
