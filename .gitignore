@@ -1,0 +1,12 @@
+node_modules/
+dist/
+build/
+.pio/
+__pycache__/
+*.pyc
+.pytest_cache/
+.vite/
+*.db
+apps/dashboard/api/data/*.db
+test-results/
+playwright-report/
