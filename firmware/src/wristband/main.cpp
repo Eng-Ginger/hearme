@@ -270,7 +270,7 @@ static void ble_start() {
   NimBLEDevice::init("");
   NimBLEScan *scan = NimBLEDevice::getScan();
   scan->setAdvertisedDeviceCallbacks(&scan_cb, true);  // want duplicates: every advert counts
-  scan->setActiveScan(false);                          // passive: never transmits
+  scan->setActiveScan(true);                           // v1.1: active, so the scan-response UUID is seen too (matching still uses manufacturer data)
   scan->setDuplicateFilter(false);
   scan->setMaxResults(0);                              // do not store results
   scan->setInterval(100);                              // ms

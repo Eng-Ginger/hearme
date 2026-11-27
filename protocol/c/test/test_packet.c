@@ -44,6 +44,19 @@ int main(void) {
         uint8_t id[4]; hm_rolling_id((const uint8_t *)"bike-001", 8, HM_VECS[0].epoch, id);
         if (memcmp(id, HM_VECS[0].rid, 4) != 0) { printf("  FAIL rolling_id derivation\n"); failures++; }
     }
-    printf("C codec: %d vectors, %d failures\n", HM_NVECS, failures);
+    /* v1.1 scan response */
+    {
+        uint8_t sr[40]; size_t ml = 0; int n = hm_encode_scan_response(sr, sizeof sr);
+        if (n != (int)sizeof HM_SR_EXPECTED || memcmp(sr, HM_SR_EXPECTED, sizeof HM_SR_EXPECTED) != 0) { printf("  FAIL scan response bytes\n"); failures++; }
+        if (hm_encode_scan_response(sr, 17) != HM_ERR_BUF) { printf("  FAIL scan response buffer check\n"); failures++; }
+        if (hm_parse_adv(HM_SR_EXPECTED, sizeof HM_SR_EXPECTED, &ml) != NULL) { printf("  FAIL scan response parsed as packet\n"); failures++; }
+        for (i = 0; i < HM_SR_NCASES; i++) {
+            const hm_sr_case_t *c = &HM_SR_CASES[i];
+            if (hm_has_hearme_uuid(c->data, (size_t)c->len) != c->has_uuid) { printf("  FAIL scan response case %s\n", c->name); failures++; }
+        }
+        for (i = 0; i < HM_NVECS; i++)
+            if (HM_VECS[i].valid && hm_has_hearme_uuid(HM_VECS[i].adv, (size_t)HM_VECS[i].adv_len)) { printf("  FAIL %s: v1 adv has uuid\n", HM_VECS[i].name); failures++; }
+    }
+    printf("C codec: %d vectors, %d scan-response cases, %d failures\n", HM_NVECS, HM_SR_NCASES, failures);
     return failures ? 1 : 0;
 }

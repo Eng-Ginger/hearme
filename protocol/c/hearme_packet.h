@@ -255,6 +255,39 @@ static inline const uint8_t *hm_parse_adv(const uint8_t *adv, size_t len, size_t
     return NULL;
 }
 
+/* ---------------------------------------------- v1.1 scan response (service UUID) */
+/* HearMe 128-bit service UUID 4f2a6c1e-7d3b-4e9a-9c51-8b0d2e6f3a71 (random v4, not
+ * SIG-assigned), in on-air little-endian byte order. Carried only in the scan response. */
+#define HM_AD_UUID128_INCOMPLETE 0x06u
+#define HM_AD_UUID128_COMPLETE   0x07u
+#define HM_SCAN_RESPONSE_LEN     18u
+static const uint8_t HM_SERVICE_UUID_LE[16] = {
+    0x71,0x3a,0x6f,0x2e,0x0d,0x8b,0x51,0x9c,0x9a,0x4e,0x3b,0x7d,0x1e,0x6c,0x2a,0x4f
+};
+
+/* Scan response AdvData: one "Complete List of 128-bit Service UUIDs" AD. Returns 18 or HM_ERR_BUF. */
+static inline int hm_encode_scan_response(uint8_t *out, size_t outcap) {
+    if (outcap < HM_SCAN_RESPONSE_LEN) return HM_ERR_BUF;
+    out[0] = 17; out[1] = HM_AD_UUID128_COMPLETE;
+    memcpy(out + 2, HM_SERVICE_UUID_LE, 16);
+    return (int)HM_SCAN_RESPONSE_LEN;
+}
+
+/* 1 if AdvData / scan-response data lists the HearMe service UUID (AD type 0x06 or 0x07). */
+static inline int hm_has_hearme_uuid(const uint8_t *ad, size_t len) {
+    size_t i = 0, j;
+    while (i < len) {
+        uint8_t ln = ad[i];
+        if (ln == 0 || i + 1 + ln > len) return 0;
+        if ((ad[i + 1] == HM_AD_UUID128_INCOMPLETE || ad[i + 1] == HM_AD_UUID128_COMPLETE) && (ln - 1) % 16 == 0) {
+            for (j = i + 2; j < i + 1 + ln; j += 16)
+                if (memcmp(ad + j, HM_SERVICE_UUID_LE, 16) == 0) return 1;
+        }
+        i += 1u + ln;
+    }
+    return 0;
+}
+
 static const uint8_t HM_TEST_FLEET_KEY[32] = {
     0x48,0x65,0x61,0x72,0x24,0xd6,0x50,0xa1,0xc3,0xe7,0x9f,0x0b,0x8a,0x2d,0x5e,0x6f,
     0x1b,0x3c,0x4d,0x5e,0x6f,0x70,0x81,0x92,0xa3,0xb4,0xc5,0xd6,0xe7,0xf8,0x09,0x10

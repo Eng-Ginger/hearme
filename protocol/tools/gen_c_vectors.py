@@ -40,6 +40,16 @@ for v in src["vectors"]:
                      f'0,0,0,0,0,0, 0,0, "", 3, 0, 0, ""}},')
 lines.append("};")
 lines.append(f"#define HM_NVECS {len(src['vectors'])}")
+sr = src["scan_response"]
+srb, srn = carr(sr["scan_response_hex"])
+lines.append(f"static const uint8_t HM_SR_EXPECTED[{srn}] = {srb};")
+lines.append("typedef struct { const char *name; uint8_t data[40]; int len; int has_uuid; } hm_sr_case_t;")
+lines.append("static const hm_sr_case_t HM_SR_CASES[] = {")
+for c in sr["cases"]:
+    d, n = carr(c["data_hex"]) if c["data_hex"] else ("{0}", 0)
+    lines.append(f'  {{"{c["name"]}", {d}, {n}, {int(c["has_hearme_uuid"])}}},')
+lines.append("};")
+lines.append(f"#define HM_SR_NCASES {len(sr['cases'])}")
 out = os.path.join(HERE, "..", "c", "test", "test_vectors_gen.h")
 os.makedirs(os.path.dirname(out), exist_ok=True)
 open(out, "w", encoding="utf-8").write("\n".join(lines) + "\n")

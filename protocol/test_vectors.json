@@ -285,5 +285,74 @@
       "epoch": 3000005,
       "payload_hex": "10c04cbd1406482da086240fd4b21621c64fc19e"
     }
-  ]
+  ],
+  "scan_response": {
+    "description": "v1.1 scan response: one 'Complete List of 128-bit Service UUIDs' AD (type 0x07), UUID bytes little-endian. The main advertising packet (adv_hex above) is unchanged.",
+    "service_uuid": "4f2a6c1e-7d3b-4e9a-9c51-8b0d2e6f3a71",
+    "uuid_le_hex": "713a6f2e0d8b519c9a4e3b7d1e6c2a4f",
+    "scan_response_hex": "1107713a6f2e0d8b519c9a4e3b7d1e6c2a4f",
+    "length": 18,
+    "cases": [
+      {
+        "name": "hearme_scan_response",
+        "data_hex": "1107713a6f2e0d8b519c9a4e3b7d1e6c2a4f",
+        "has_hearme_uuid": true
+      },
+      {
+        "name": "flags_then_uuid",
+        "data_hex": "0201061107713a6f2e0d8b519c9a4e3b7d1e6c2a4f",
+        "has_hearme_uuid": true
+      },
+      {
+        "name": "incomplete_list_0x06",
+        "data_hex": "1106713a6f2e0d8b519c9a4e3b7d1e6c2a4f",
+        "has_hearme_uuid": true
+      },
+      {
+        "name": "uuid_second_in_list",
+        "data_hex": "2107000102030405060708090a0b0c0d0e0f713a6f2e0d8b519c9a4e3b7d1e6c2a4f",
+        "has_hearme_uuid": true
+      },
+      {
+        "name": "uuid_big_endian",
+        "data_hex": "11074f2a6c1e7d3b4e9a9c518b0d2e6f3a71",
+        "has_hearme_uuid": false
+      },
+      {
+        "name": "other_uuid",
+        "data_hex": "1107000102030405060708090a0b0c0d0e0f",
+        "has_hearme_uuid": false
+      },
+      {
+        "name": "one_byte_changed",
+        "data_hex": "1107713a6f2e0d8b519c9a4e3b7d1e6c2a4e",
+        "has_hearme_uuid": false
+      },
+      {
+        "name": "uuid_in_manufacturer_data",
+        "data_hex": "13ffffff713a6f2e0d8b519c9a4e3b7d1e6c2a4f",
+        "has_hearme_uuid": false
+      },
+      {
+        "name": "truncated",
+        "data_hex": "1107713a6f2e0d8b519c",
+        "has_hearme_uuid": false
+      },
+      {
+        "name": "bad_list_length",
+        "data_hex": "1207713a6f2e0d8b519c9a4e3b7d1e6c2a4f00",
+        "has_hearme_uuid": false
+      },
+      {
+        "name": "v1_adv_packet",
+        "data_hex": "17ffffff10c04cbd1406482da086240fd4b21621c64fc19e",
+        "has_hearme_uuid": false
+      },
+      {
+        "name": "empty",
+        "data_hex": "",
+        "has_hearme_uuid": false
+      }
+    ]
+  }
 }

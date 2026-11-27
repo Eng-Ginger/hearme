@@ -37,7 +37,7 @@ page says plainly what the work shows and what it does not.
   derived from typical beacon practice, not a measurement of our hardware.
 - **Phone operating-system limits.** Background BLE scanning is restricted on both
   Android (throttling, Doze, foreground-service requirements) and iOS (background
-  scans generally only for service UUIDs; v1 has none). The real reception rate on a
+  scans generally only for service UUIDs; v1.1 adds one in the scan response, still to be verified on an iPhone). The real reception rate on a
   phone in a pocket with the screen off is unknown; see `docs/power_budget.md`.
 - **Channel congestion.** At a busy junction with dozens of beacons plus other BLE
   traffic, collision losses rise (roughly 30 % at 50 beacons by a simple estimate,

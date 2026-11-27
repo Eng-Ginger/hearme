@@ -19,6 +19,15 @@ MAC_LEN = 4
 HEADER_LEN = 8
 POS_LEN = 8
 MAX_BODY = 27                # 31 - (len, type 0xFF, company id 2 bytes)
+SPEC_REVISION = "1.1"        # v1.1 = v1 packet + scan response with the service UUID
+
+# HearMe 128-bit service UUID (random v4, not SIG-assigned), carried only in the
+# SCAN RESPONSE so the main advertising packet stays byte-identical to v1.
+SERVICE_UUID = "4f2a6c1e-7d3b-4e9a-9c51-8b0d2e6f3a71"
+SERVICE_UUID_LE = bytes.fromhex(SERVICE_UUID.replace("-", ""))[::-1]  # on-air byte order
+AD_UUID128_INCOMPLETE = 0x06
+AD_UUID128_COMPLETE = 0x07
+SCAN_RESPONSE_LEN = 18       # len 0x11, type 0x07, 16 UUID bytes
 
 TYPES = ["e_bike", "e_scooter", "tuk_tuk", "car", "bus", "bus_stop",
          "crossing", "school_zone", "motorcycle"]
@@ -209,6 +218,35 @@ def parse_adv(adv: bytes) -> Optional[bytes]:
             return bytes(adv[i + 4:i + 1 + ln])
         i += 1 + ln
     return None
+
+
+def encode_scan_response() -> bytes:
+    """Scan response AdvData: one "Complete List of 128-bit Service UUIDs" AD (18 bytes).
+
+    Constant for every beacon (no name, no per-device data), so it adds nothing
+    linkable beyond the fact that the device is a HearMe beacon.
+    """
+    return bytes([1 + len(SERVICE_UUID_LE), AD_UUID128_COMPLETE]) + SERVICE_UUID_LE
+
+
+def has_hearme_uuid(ad: bytes) -> bool:
+    """True if AdvData / scan-response data lists the HearMe 128-bit service UUID
+    (AD type 0x06 or 0x07). Malformed AD structures end the walk (result False
+    unless the UUID was already found)."""
+    i = 0
+    while i < len(ad):
+        ln = ad[i]
+        if ln == 0 or i + 1 + ln > len(ad):
+            return False
+        if ad[i + 1] in (AD_UUID128_INCOMPLETE, AD_UUID128_COMPLETE) and (ln - 1) % 16 == 0:
+            for j in range(i + 2, i + 1 + ln, 16):
+                if ad[j:j + 16] == SERVICE_UUID_LE:
+                    return True
+        i += 1 + ln
+    return False
+
+
+parse_scan_response = has_hearme_uuid   # alias
 
 
 TEST_FLEET_KEY = bytes.fromhex(

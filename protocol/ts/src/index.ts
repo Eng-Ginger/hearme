@@ -186,6 +186,40 @@ export function parseAdv(adv: Uint8Array): Uint8Array | null {
   return null;
 }
 
+// ---- v1.1: scan response carrying the HearMe 128-bit service UUID (main packet unchanged)
+export const SPEC_REVISION = "1.1";
+export const SERVICE_UUID = "4f2a6c1e-7d3b-4e9a-9c51-8b0d2e6f3a71"; // random v4, not SIG-assigned
+/** UUID bytes in on-air (little-endian) order. */
+export const SERVICE_UUID_LE: Uint8Array = hexToBytes(SERVICE_UUID.replace(/-/g, "")).reverse();
+export const AD_UUID128_INCOMPLETE = 0x06;
+export const AD_UUID128_COMPLETE = 0x07;
+export const SCAN_RESPONSE_LEN = 18;
+
+/** Scan response AdvData: one "Complete List of 128-bit Service UUIDs" AD (18 bytes). */
+export function encodeScanResponse(): Uint8Array {
+  return concat(new Uint8Array([1 + SERVICE_UUID_LE.length, AD_UUID128_COMPLETE]), SERVICE_UUID_LE);
+}
+
+/** True if AdvData / scan-response data lists the HearMe service UUID (AD type 0x06 or 0x07). */
+export function hasHearmeUuid(ad: Uint8Array): boolean {
+  let i = 0;
+  while (i < ad.length) {
+    const ln = ad[i];
+    if (ln === 0 || i + 1 + ln > ad.length) return false;
+    const t = ad[i + 1];
+    if ((t === AD_UUID128_INCOMPLETE || t === AD_UUID128_COMPLETE) && (ln - 1) % 16 === 0) {
+      for (let j = i + 2; j < i + 1 + ln; j += 16) {
+        let diff = 0;
+        for (let k = 0; k < 16; k++) diff |= ad[j + k] ^ SERVICE_UUID_LE[k];
+        if (diff === 0) return true;
+      }
+    }
+    i += 1 + ln;
+  }
+  return false;
+}
+export const parseScanResponse = hasHearmeUuid;
+
 /** Canonical field dict, same shape as test_vectors.json "fields". */
 export function fields(p: Packet): Record<string, unknown> {
   const d: Record<string, unknown> = {

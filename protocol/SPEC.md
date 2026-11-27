@@ -42,7 +42,7 @@ HearMe makes vehicles *announce themselves by radio instead of by sound*:
 | Item | Requirement |
 |---|---|
 | PHY | Bluetooth LE 1M PHY |
-| PDU | Legacy advertising, **ADV_NONCONN_IND** (non-connectable, non-scannable) on primary channels 37, 38 and 39 |
+| PDU | Legacy advertising on primary channels 37, 38 and 39. v1.0: **ADV_NONCONN_IND** (non-connectable, non-scannable). **v1.1: ADV_SCAN_IND** (scannable, non-connectable) with a scan response carrying the HearMe service UUID (section 2.2). The advertising packet itself is byte-identical in v1.0 and v1.1 |
 | Advertising interval | **100 ms** nominal for moving vehicles. Per the Core Specification the controller adds a pseudo-random advDelay of 0-10 ms to every advertising event, which de-synchronises beacons |
 | Parked / stationary vehicles | MAY slow to 1 s or stop (see `docs/power_budget.md`); MUST return to 100 ms within 1 s of moving |
 | Infrastructure beacons | SHOULD use 200-500 ms (they do not move; saves battery on solar/battery stops) |
@@ -73,6 +73,36 @@ channel at 1 Mbit/s. At 100 ms one beacon occupies about 0.4 % of each channel.
 Collisions grow with density: with a simple ALOHA-style estimate, 50 beacons in range
 lose roughly 30 % of packets to collisions before any other loss. This is a
 calculation, not a measurement; see section 11 and `docs/limitations.md`.
+
+### 2.2 Scan response and iOS background scanning (v1.1)
+
+v1.1 beacons are **scannable**: when a scanner sends a SCAN_REQ, the beacon answers with this
+scan response (18 bytes, well within 31):
+
+| Byte | Value | Meaning |
+|---|---|---|
+| 0 | `0x11` | AD length (17) |
+| 1 | `0x07` | AD type: Complete List of 128-bit Service UUIDs |
+| 2-17 | UUID, little-endian | HearMe service UUID **`4f2a6c1e-7d3b-4e9a-9c51-8b0d2e6f3a71`** (random v4, *not* SIG-assigned) |
+
+Codecs: `encode_scan_response` / `has_hearme_uuid` (Python), `encodeScanResponse` / `hasHearmeUuid`
+(TypeScript), `hm_encode_scan_response` / `hm_has_hearme_uuid` (C); vector `scan_response` in
+`test_vectors.json`. Receivers still decode the manufacturer data of the advertising packet; the UUID
+only helps scanners *find* beacons.
+
+Compatibility: v1.0 receivers ignore the scan response, so v1.1 is fully backward compatible. Cost:
+every active scan request triggers a scan response (more airtime and a little more beacon power).
+
+**What this changes on iOS.** Documented Apple behaviour: an app in the background can only scan
+for peripherals advertising one of the service UUIDs it asks for; background scanning coalesces
+duplicate discoveries; the app receives the advertisement data and RSSI with each discovery.
+Expected effect: an iPhone app in the background (or a Shortcut-style wake-up) can now *discover*
+HearMe beacons by UUID, which v1.0 (no UUID) made impossible. **Must be verified on a real iPhone:**
+that iOS background scanning matches a 128-bit UUID that appears only in the scan response, and how
+often callbacks arrive. Even if it works, background iOS gives presence and occasional updates, not
+the 10 Hz tracking a warning needs, so real-time warnings on iPhone still need the app in the
+foreground or a paired wristband. Fallbacks if scan-response matching fails: a 16-bit SIG-assigned
+service UUID in the primary packet (costs 4 bytes) or BLE 5 extended advertising (v2).
 
 ---
 

@@ -46,3 +46,27 @@ def test_rolling_id_changes_each_epoch():
 def test_conversions():
     assert hp.speed_to_raw(7.25) == 73 and hp.speed_to_raw(99) == 254 and hp.speed_to_raw(None) == 255
     assert hp.heading_to_raw(359.5) == 0 and hp.heading_to_raw(-90) == 135
+
+
+def test_scan_response_vector():
+    sr = VEC["scan_response"]
+    out = hp.encode_scan_response()
+    assert out.hex() == sr["scan_response_hex"]
+    assert len(out) == sr["length"] == hp.SCAN_RESPONSE_LEN <= 31
+    assert sr["service_uuid"] == hp.SERVICE_UUID
+    assert hp.SERVICE_UUID_LE.hex() == sr["uuid_le_hex"]
+    assert out[0] == 17 and out[1] == 0x07
+
+
+def test_scan_response_cases():
+    for c in VEC["scan_response"]["cases"]:
+        assert hp.has_hearme_uuid(bytes.fromhex(c["data_hex"])) == c["has_hearme_uuid"], c["name"]
+        assert hp.parse_scan_response(bytes.fromhex(c["data_hex"])) == c["has_hearme_uuid"], c["name"]
+
+
+def test_main_packet_has_no_uuid_and_scan_response_has_no_packet():
+    sr = hp.encode_scan_response()
+    assert hp.parse_adv(sr) is None
+    for v in VEC["vectors"]:
+        if v["valid"]:
+            assert not hp.has_hearme_uuid(bytes.fromhex(v["adv_hex"])), v["name"]

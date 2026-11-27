@@ -123,10 +123,10 @@ advertising: one extra ~0.4 ms advertising event per 100 ms, on the order of
   walking; permissions differ by Android version (location permission on older
   versions, `BLUETOOTH_SCAN` on newer ones).
 - **iOS:** apps in the background can generally scan only for advertisements that
-  carry specific service UUIDs, and duplicate reports are coalesced. HearMe v1 uses
-  manufacturer data without a service UUID, so on iPhone the app must be in the
-  **foreground** to receive it reliably. v2 should carry a SIG-assigned 16-bit service
-  UUID to work better with background modes.
+  carry specific service UUIDs, and duplicate reports are coalesced. v1.1 beacons put a
+  128-bit HearMe service UUID in the scan response (SPEC section 2.2) so a background app can
+  discover them (to be verified on a real iPhone); real-time warnings still need the app in
+  the **foreground** or a paired wristband.
 - **Adaptive behaviour:** the app should reduce GPS use when no HearMe beacons are
   heard, and scan at full rate only while walking (step detection).
 - Real numbers must come from a pilot; see `docs/limitations.md`.

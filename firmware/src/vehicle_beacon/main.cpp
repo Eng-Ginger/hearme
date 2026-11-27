@@ -301,7 +301,17 @@ void setup() {
   NimBLEDevice::setPower(HEARME_TX_POWER, ESP_BLE_PWR_TYPE_DEFAULT);
   adv = NimBLEDevice::getAdvertising();
   adv->setAdvertisementType(BLE_GAP_CONN_MODE_NON);  // non-connectable, undirected
-  adv->setScanResponse(false);
+  // v1.1: scannable (ADV_SCAN_IND). The scan response carries the 128-bit HearMe service UUID
+  // so iOS background scanners (which filter by service UUID) can find the beacon.
+  // The main advertising packet is unchanged v1.
+  {
+    uint8_t sr[HM_SCAN_RESPONSE_LEN];
+    int n = hm_encode_scan_response(sr, sizeof sr);
+    NimBLEAdvertisementData srd;
+    if (n > 0) srd.addData(std::string((const char *)sr, (size_t)n));
+    adv->setScanResponseData(srd);
+    adv->setScanResponse(n > 0);
+  }
   adv->setMinInterval(160);  // 100 ms (units of 0.625 ms)
   adv->setMaxInterval(176);  // 110 ms: spreads collisions between beacons
   last_motion_ms = millis();
