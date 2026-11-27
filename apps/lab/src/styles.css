@@ -151,3 +151,11 @@ select option { color: #111; }
 kbd { background: #2a2b30; border: 1px solid #444; border-bottom-width: 2px; border-radius: 6px; padding: 1px 7px; font-family: inherit; font-size: 13px; }
 .rec-dot { position: absolute; top: 22px; right: 28px; z-index: 45; font-size: 14px; color: rgba(255,255,255,0.35); font-weight: 700; letter-spacing: 1px; }
 @media (max-width: 1100px) { .bar { flex-wrap: wrap; } .panel { top: 120px; width: 330px; } .phone-frame { transform: scale(0.8); transform-origin: top right; } }
+
+.l-badge { font-size: 13px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; color: #111; background: var(--accent); padding: 5px 12px; border-radius: 99px; }
+.l-how { margin: 0; color: var(--ink); font-size: 15px; max-width: 640px; line-height: 1.6; }
+.l-small a { color: #b8b3a6; }
+.l-load { display: flex; flex-direction: column; align-items: center; gap: 6px; width: min(360px, 80vw); }
+.l-load-bar { width: 100%; height: 6px; border-radius: 3px; background: rgba(255,255,255,0.12); overflow: hidden; }
+.l-load-bar span { display: block; height: 100%; background: var(--accent); transition: width 0.25s ease; }
+.l-load-txt { font-size: 12px; color: var(--muted); }

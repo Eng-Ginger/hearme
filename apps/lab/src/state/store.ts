@@ -11,7 +11,8 @@ export interface UIState {
   receiverMode: ReceiverMode;
   carry: CarryMode;
   walker: "slow" | "normal" | "fast";
-  quality: "high" | "low";
+  quality: "auto" | "high" | "medium" | "low";
+  autoLevel: "medium" | "low";   // what "auto" currently resolves to
   scenarioId: string;
   panelOpen: boolean;
   phoneOpen: boolean;
@@ -30,7 +31,7 @@ export interface UIState {
 }
 
 let state: UIState = {
-  started: false, view: "sighted", mode: "on", receiverMode: "gps", carry: "pocket", walker: "normal", quality: "high", scenarioId: "school",
+  started: false, view: "sighted", mode: "on", receiverMode: "gps", carry: "pocket", walker: "normal", quality: "auto", autoLevel: "medium", scenarioId: "school",
   panelOpen: true, phoneOpen: true, wristOpen: true, captionsOn: true, lang: "en", speechOn: true,
   director: false, caption: "", spoken: "", spokenAt: 0, titleCard: "none", edgeFlash: null, paused: false, hint: "",
 };

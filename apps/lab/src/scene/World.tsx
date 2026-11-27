@@ -122,9 +122,27 @@ function Loop() {
   return null;
 }
 
+/** quality "auto": starts medium, drops to low when the frame rate stays below 40 fps for 3 s. */
+function AutoQuality() {
+  const acc = useRef({ frames: 0, t: 0, lowFor: 0 });
+  useFrame((_, dt) => {
+    const s = store.get();
+    if (s.quality !== "auto" || s.autoLevel === "low" || !s.started || document.hidden) return;
+    const a = acc.current;
+    a.frames++; a.t += dt;
+    if (a.t >= 0.5) {
+      const fps = a.frames / a.t;
+      a.lowFor = fps < 40 ? a.lowFor + a.t : 0;
+      a.frames = 0; a.t = 0;
+      if (a.lowFor >= 3) { store.set({ autoLevel: "low", hint: "Graphics set to low quality to keep the demo smooth (Q to change)" }); }
+    }
+  });
+  return null;
+}
+
 export function World() {
   const night = useUI((s) => s.scenarioId === "night");
-  const quality = useUI((s) => s.quality);
+  const q = useUI((s) => (s.quality === "auto" ? s.autoLevel : s.quality));
   const { scene, gl } = useThree();
   useEffect(() => {
     scene.fog = new THREE.Fog(night ? "#0b1020" : "#e7cfae", night ? 25 : 90, night ? 150 : 340);   // warm distant haze
@@ -134,8 +152,8 @@ export function World() {
   // low late-afternoon sun from the south-west
   const sunPos: [number, number, number] = [-70, 26, 45];
   const hdri = night ? "/assets/polyhaven/qwantani_dusk_2_puresky_1k.hdr"
-    : quality === "high" ? "/assets/polyhaven/qwantani_late_afternoon_puresky_2k.hdr" : "/assets/polyhaven/qwantani_late_afternoon_puresky_1k.hdr";
-  const shadowSize = quality === "high" ? 4096 : 1024;
+    : q === "high" ? "/assets/polyhaven/qwantani_late_afternoon_puresky_2k.hdr" : "/assets/polyhaven/qwantani_late_afternoon_puresky_1k.hdr";
+  const shadowSize = q === "high" ? 4096 : q === "medium" ? 2048 : 1024;
   return (
     <>
       <Suspense fallback={null}>
@@ -149,13 +167,14 @@ export function World() {
         color={night ? "#8fa3d6" : "#ffcf98"}
         castShadow
         shadow-mapSize={[shadowSize, shadowSize]}
-        shadow-radius={quality === "high" ? 6 : 3}
+        shadow-radius={q === "low" ? 2 : 5}
         shadow-camera-left={-50} shadow-camera-right={50} shadow-camera-top={40} shadow-camera-bottom={-40}
         shadow-camera-near={1} shadow-camera-far={220} shadow-bias={-0.0004} shadow-normalBias={0.02}
       />
       <Suspense fallback={null}><Street night={night} /></Suspense>
       <Vehicles night={night} />
-      <Students count={quality === "high" ? 8 : 4} />
+      <Students count={q === "high" ? 8 : q === "medium" ? 6 : 3} />
+      <AutoQuality />
       <FirstPerson />
       <Loop />
     </>

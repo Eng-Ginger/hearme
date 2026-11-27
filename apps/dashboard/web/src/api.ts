@@ -58,11 +58,26 @@ async function get<T>(path: string): Promise<T> {
 
 const hourQuery = (hour: number | null) => (hour === null ? "" : `hour=${hour}`);
 
-export const api = {
-  cells: (hour: number | null) => get<CellsResponse>(`/api/cells?${hourQuery(hour)}`),
-  pois: () => get<{ pois: Poi[] }>("/api/pois").then((r) => r.pois),
-  top: (hour: number | null, limit = 10) =>
-    get<{ top: Ranked[] }>(`/api/top?limit=${limit}&${hourQuery(hour)}`).then((r) => r.top),
-  meta: () => get<Meta>("/api/meta"),
-  exportUrl: (hour: number | null) => `/api/export.csv?${hourQuery(hour)}`,
-};
+// Static build (Vercel, read-only): responses were precomputed at build time from the same API
+// (tools/build_deploy.py) and are served as JSON files next to the app.
+const STATIC = import.meta.env.VITE_STATIC === "1";
+const B = import.meta.env.BASE_URL;
+const h = (hour: number | null) => (hour === null ? "all" : String(hour));
+
+export const api = STATIC
+  ? {
+      cells: (hour: number | null) => get<CellsResponse>(`${B}data/cells_${h(hour)}.json`),
+      pois: () => get<{ pois: Poi[] }>(`${B}data/pois.json`).then((r) => r.pois),
+      top: (hour: number | null, limit = 10) =>
+        get<{ top: Ranked[] }>(`${B}data/top_${h(hour)}.json`).then((r) => r.top.slice(0, limit)),
+      meta: () => get<Meta>(`${B}data/meta.json`),
+      exportUrl: (hour: number | null) => `${B}data/export_${h(hour)}.csv`,
+    }
+  : {
+      cells: (hour: number | null) => get<CellsResponse>(`/api/cells?${hourQuery(hour)}`),
+      pois: () => get<{ pois: Poi[] }>("/api/pois").then((r) => r.pois),
+      top: (hour: number | null, limit = 10) =>
+        get<{ top: Ranked[] }>(`/api/top?limit=${limit}&${hourQuery(hour)}`).then((r) => r.top),
+      meta: () => get<Meta>("/api/meta"),
+      exportUrl: (hour: number | null) => `/api/export.csv?${hourQuery(hour)}`,
+    };

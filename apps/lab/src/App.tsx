@@ -44,7 +44,7 @@ function Help() {
   }, []);
   if (!open) return null;
   const rows = [["D", "Start director mode (scripted 85 s video sequence)"], ["Esc", "Stop director mode"], ["C", "Captions on/off"], ["B", "Blind mode / sighted view"],
-    ["H", "Cycle HearMe OFF / ON / AVAS sound only"], ["1-5", "Scenarios"], ["← →", "Walk along the kerb"], ["Q", "Quality high / low"], ["P / F / W", "Panel / phone / wristband"], ["L", "Speech language EN / AR"], ["Space", "Pause"], ["Drag", "Look around"]];
+    ["H", "Cycle HearMe OFF / ON / AVAS sound only"], ["1-5", "Scenarios"], ["← →", "Walk along the kerb"], ["Q", "Quality auto / high / medium / low"], ["P / F / W", "Panel / phone / wristband"], ["L", "Speech language EN / AR"], ["Space", "Pause"], ["Drag", "Look around"]];
   return (
     <div className="help" role="dialog" aria-label="Keyboard shortcuts" onClick={() => setOpen(false)}>
       <h2>Keyboard shortcuts</h2>
@@ -55,7 +55,7 @@ function Help() {
 
 export default function App() {
   const director = useUI((s) => s.director);
-  const quality = useUI((s) => s.quality);
+  const quality = useUI((s) => (s.quality === "auto" ? s.autoLevel : s.quality));
   const scale = useStageScale(director);
 
   const start = useCallback(async () => {
@@ -83,7 +83,7 @@ export default function App() {
         case "w": store.set({ wristOpen: !s.wristOpen }); break;
         case "l": store.set({ lang: s.lang === "en" ? "ar" : "en" }); break;
         case " ": e.preventDefault(); store.set({ paused: !s.paused }); if (!s.paused) speech.cancel(); break;
-        case "q": store.set({ quality: s.quality === "high" ? "low" : "high" }); break;
+        case "q": { const order = ["auto", "high", "medium", "low"] as const; store.set({ quality: order[(order.indexOf(s.quality) + 1) % 4], hint: "" }); break; }
         case "arrowleft": case "arrowright": e.preventDefault(); camCtl.walk = walkDir(e.key, camCtl.yaw); break;
         case "1": case "2": case "3": case "4": case "5": loadScenario(SCENARIOS[Number(e.key) - 1].id); break;
       }
@@ -103,7 +103,7 @@ export default function App() {
       <div className={`stage ${director ? "director" : ""}`} style={stageStyle}>
         <Canvas
           shadows="soft"
-          dpr={director ? 1 : quality === "high" ? [1, 1.75] : 1}
+          dpr={director ? 1 : quality === "high" ? [1, 1.75] : quality === "medium" ? [1, 1.25] : 1}
           camera={{ fov: 62, near: 0.1, far: 500, position: [0, 1.6, 4.6] }}
           gl={{ antialias: true, powerPreference: "high-performance" }}
           onCreated={({ gl }) => { gl.toneMapping = THREE.ACESFilmicToneMapping; gl.toneMappingExposure = 1.0; }}

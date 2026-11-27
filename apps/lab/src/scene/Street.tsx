@@ -15,7 +15,10 @@ const PH = "/assets/polyhaven/";
 const SAND = "#d9c4a0", STONE = "#e6d3b1", TERRACOTTA = "#b5653f", GLASS = "#1d3646";
 
 function usePbr(name: string, repeat: [number, number], tint?: string, useColorMap = true) {
-  const t = useTexture({ map: `${PH}${name}_diffuse_1k.jpg`, normalMap: `${PH}${name}_nor_gl_1k.jpg`, roughnessMap: `${PH}${name}_rough_1k.jpg` });
+  const t = useTexture({
+    ...(useColorMap ? { map: `${PH}${name}_diffuse_1k.webp` } : {}),
+    normalMap: `${PH}${name}_nor_gl_1k.webp`, roughnessMap: `${PH}${name}_rough_1k.webp`,
+  });
   return useMemo(() => {
     const out: Record<string, THREE.Texture> = {};
     for (const [k, tex] of Object.entries(t)) {
@@ -27,7 +30,6 @@ function usePbr(name: string, repeat: [number, number], tint?: string, useColorM
       c.needsUpdate = true;
       out[k] = c;
     }
-    if (!useColorMap) delete out.map;   // pale surfaces: keep only relief (normal) and roughness
     return { ...out, color: tint ? new THREE.Color(tint) : undefined };
   }, [t, repeat[0], repeat[1], tint, useColorMap]); // eslint-disable-line react-hooks/exhaustive-deps
 }

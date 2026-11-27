@@ -1,5 +1,6 @@
 // Top control bar, landing screen and phone frame.
 import { useEffect } from "react";
+import { useProgress } from "@react-three/drei";
 import { PhoneApp } from "@hearme/receiver-pwa";
 import { engine, type HearMeMode } from "../sim/engine";
 import { SCENARIOS } from "../sim/scenarios";
@@ -77,6 +78,17 @@ export function PhoneFrame() {
   );
 }
 
+function LoadBar() {
+  const { progress, active } = useProgress();
+  const done = !active && progress >= 100;
+  return (
+    <div className="l-load" role="progressbar" aria-valuenow={Math.round(progress)} aria-valuemin={0} aria-valuemax={100} aria-label="Loading the street">
+      <div className="l-load-bar"><span style={{ width: `${done ? 100 : Math.max(4, progress)}%` }} /></div>
+      <span className="l-load-txt">{done ? "Street loaded" : `Loading the street… ${Math.round(progress)}%`}</span>
+    </div>
+  );
+}
+
 export function Landing({ onStart }: { onStart: () => void }) {
   const started = useUI((s) => s.started);
   useEffect(() => {
@@ -91,9 +103,13 @@ export function Landing({ onStart }: { onStart: () => void }) {
       <div className="landing-inner">
         <div className="l-logo">Hear<span>Me</span></div>
         <p className="l-tag">Electric vehicles are silent. We made them speak.</p>
-        <div className="l-hp"><span aria-hidden="true">🎧</span> Put on headphones. Sound in this demo is fully 3D.</div>
+        <div className="l-badge">Simulation · digital prototype</div>
+        <div className="l-hp"><span aria-hidden="true">🎧</span> Best with headphones: the sound is fully 3D.</div>
+        <p className="l-how">How to use: press <kbd>D</kbd> for the 85 s demo, <kbd>B</kbd> for blind mode, <kbd>H</kbd> to switch HearMe on/off, <kbd>?</kbd> for all keys.</p>
+        <LoadBar />
         <button className="l-start" onClick={onStart} autoFocus>Start</button>
-        <p className="l-small">WFEO Hackathon 2027 · Challenge 1: Inclusive Mobility · Digital prototype, all radio and traffic simulated</p>
+        <p className="l-small">WFEO Hackathon 2027 · Challenge 1: Inclusive Mobility · All radio, GPS and traffic are simulated ·{" "}
+          <a href="/credits.html" target="_blank" rel="noopener">Credits</a> · <a href="/phone.html" target="_blank" rel="noopener">Phone app</a> · <a href="/dashboard/" target="_blank" rel="noopener">City dashboard</a></p>
       </div>
     </div>
   );
