@@ -72,6 +72,7 @@ export class Engine {
   mode: HearMeMode = "on";
   receiverMode: ReceiverMode = "gps";
   carry: CarryMode = "pocket";
+  walkSpeedMps = 1.0;   // user setting: slow 0.7 / normal 1.0 / fast 1.3 (crossing-aware warning)
   seed = 1;
   ped = { x: 0, z: 4.6, yaw: 0 };
   vehicles: VehicleInst[] = [];
@@ -117,7 +118,7 @@ export class Engine {
   }
 
   resetReceiver() {
-    this.receiver = new Receiver({ fleet_key: TEST_FLEET_KEY, use_position: this.receiverMode === "gps", ...LAB_RECEIVER_CONFIG });
+    this.receiver = new Receiver({ fleet_key: TEST_FLEET_KEY, use_position: this.receiverMode === "gps", walk_speed_mps: this.walkSpeedMps, ...LAB_RECEIVER_CONFIG });
     this.ridToUid.clear();
     for (const v of this.vehicles) { v.firstWarnT = null; this.ridToUid.set(v.rid, v.uid); }
     this.post({ k: "reset", receiverMode: this.receiverMode });
@@ -263,7 +264,7 @@ export class Engine {
     this.emit({ kind: "pass", pass });
   }
 
-  private channelRssi(rng: Rng, shadowRef: { shadow: { t: number; s: number } | null }, t: number, d: number, x: number, z: number): number | null {
+  private channelRssi(rng: Rng, shadowRef: { shadow: { t: number; s: number } | null }, t: number, d: number, x: number, z: number, txOffsetDb = 0): number | null {
     if (rng.next() < RADIO.packetLoss) return null;
     const prev = shadowRef.shadow;
     let s: number;
@@ -275,7 +276,7 @@ export class Engine {
     shadowRef.shadow = { t, s };
     const rel = relAngle(this.ped.x, this.ped.z, this.ped.yaw, x, z);
     const body = (RADIO.bodyLossDb[this.carry] * (1 - Math.cos((rel * Math.PI) / 180))) / 2;
-    const r = RADIO.txPower1mDbm - 10 * RADIO.pathLossN * Math.log10(Math.max(d, 0.3)) + s + rng.normal(0, RADIO.fastFadingSigmaDb) - body;
+    const r = RADIO.txPower1mDbm + txOffsetDb - 10 * RADIO.pathLossN * Math.log10(Math.max(d, 0.3)) + s + rng.normal(0, RADIO.fastFadingSigmaDb) - body;
     return r < RADIO.sensitivityDbm ? null : Math.round(r);
   }
 
@@ -284,7 +285,7 @@ export class Engine {
       const at = v.nextAdv;
       v.nextAdv += RADIO.advIntervalS + v.rng.uniform(0, RADIO.advDelayMaxS);
       if (d > 160) continue;
-      const rssi = this.channelRssi(v.rng, v, at, d, v.x, v.z);
+      const rssi = this.channelRssi(v.rng, v, at, d, v.x, v.z, v.spec.phoneBeacon ? RADIO.phoneBeaconOffsetDb : 0);
       // GPS fix + dead reckoning (advance the error process even if the packet is lost)
       const pkt = this.vehiclePacket(v, at);
       if (rssi === null) continue;

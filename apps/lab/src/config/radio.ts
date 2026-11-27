@@ -9,6 +9,9 @@ export const RADIO = {
   /** RSSI at 1 m. Apple's Proximity Beacon Specification uses about -59 dBm for a ~0 dBm beacon;
    *  HearMe SPEC requires vehicle beacons at +10 dBm (ESP32-C3 datasheet: up to +21 dBm) -> about -50 dBm. */
   txPower1mDbm: -50,
+  /** Rider phone as beacon: Android AdvertiseSettings documents ADVERTISE_TX_POWER_HIGH as about +1 dBm,
+   *  i.e. about 9 dB below the +10 dBm beacon module. */
+  phoneBeaconOffsetDb: -9,
   /** Log-distance exponent. Rappaport, "Wireless Communications" 2nd ed., Table 4.2: free space 2,
    *  urban 2.7-3.5, line-of-sight in buildings 1.6-1.8. Short line-of-sight street link: 2.2. */
   pathLossN: 2.2,

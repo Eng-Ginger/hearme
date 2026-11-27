@@ -94,6 +94,12 @@ await page.waitForFunction(() => window.__hearme.engine.alerts.some((a) => a.ale
 await page.evaluate(() => { window.__hearme.camCtl.yaw = -40; });
 await page.waitForTimeout(3000);
 await shot("lab-bus-stop");
+await page.goto(`${URL}/?autostart=1&scenario=delivery`);
+await page.evaluate(() => { window.__hearme.camCtl.yaw = -58; });
+await page.waitForFunction(() => window.__hearme.engine.alerts.some((a) => a.alert.kind === "vehicle_warn"), null, { timeout: 60000 });
+await page.waitForTimeout(800);
+report.fps.delivery = await fps();
+await shot("lab-delivery-phone-beacon");
 await page.goto(URL);
 await shot("lab-landing");
 

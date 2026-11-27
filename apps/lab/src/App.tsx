@@ -36,7 +36,7 @@ function Help() {
   }, []);
   if (!open) return null;
   const rows = [["D", "Start director mode (scripted 85 s video sequence)"], ["Esc", "Stop director mode"], ["C", "Captions on/off"], ["B", "Blind mode / sighted view"],
-    ["H", "Cycle HearMe OFF / ON / AVAS sound only"], ["1-4", "Scenarios"], ["P / F / W", "Panel / phone / wristband"], ["L", "Speech language EN / AR"], ["Space", "Pause"], ["Drag", "Look around"]];
+    ["H", "Cycle HearMe OFF / ON / AVAS sound only"], ["1-5", "Scenarios"], ["P / F / W", "Panel / phone / wristband"], ["L", "Speech language EN / AR"], ["Space", "Pause"], ["Drag", "Look around"]];
   return (
     <div className="help" role="dialog" aria-label="Keyboard shortcuts" onClick={() => setOpen(false)}>
       <h2>Keyboard shortcuts</h2>
@@ -74,7 +74,7 @@ export default function App() {
         case "w": store.set({ wristOpen: !s.wristOpen }); break;
         case "l": store.set({ lang: s.lang === "en" ? "ar" : "en" }); break;
         case " ": e.preventDefault(); store.set({ paused: !s.paused }); if (!s.paused) speech.cancel(); break;
-        case "1": case "2": case "3": case "4": loadScenario(SCENARIOS[Number(e.key) - 1].id); break;
+        case "1": case "2": case "3": case "4": case "5": loadScenario(SCENARIOS[Number(e.key) - 1].id); break;
       }
     };
     window.addEventListener("keydown", k);

@@ -23,6 +23,8 @@ export interface VehicleSpec {
   route?: string;
   color?: string;
   seedSalt?: number;
+  /** beacon is the rider's phone (rider app), not a +10 dBm module */
+  phoneBeacon?: boolean;
 }
 
 export interface InfraSpec { type: "bus_stop" | "crossing" | "school_zone"; x: number; z: number; name: string; shortCode: number }
@@ -93,6 +95,17 @@ export const SCENARIOS: Scenario[] = [
     vehicles: [
       { key: "ebikeL", type: "e_bike", beacon: true, dir: 1, speed: 7.4, spawn: 1, startX: -95, z: 2.5, color: "#e8432e" },
       { key: "scootR", type: "e_scooter", beacon: true, dir: -1, speed: 6.6, spawn: 1.6, startX: 85, z: -2.4 },
+    ],
+  },
+  {
+    id: "delivery", name: "Delivery rider with phone beacon", night: false, period: 30, ambientDb: 62,
+    blurb: "Delivery riders whose rider app turns their phone into a HearMe beacon: no extra hardware, about 9 dB weaker than a beacon module.",
+    ped: { x: CROSSING_X, z: KERB_Z, yaw: 0 },
+    vehicles: [
+      { key: "rider1", type: "e_bike", beacon: true, phoneBeacon: true, dir: 1, speed: 7.0, spawn: 1, z: 2.5, color: "#ff5a1f" },
+      { key: "moto1", type: "motorcycle", beacon: false, dir: -1, speed: 11, spawn: 8 },
+      { key: "rider2", type: "e_bike", beacon: true, phoneBeacon: true, dir: -1, speed: 7.6, spawn: 13, z: -2.5, color: "#00a86b" },
+      { key: "rider3", type: "e_scooter", beacon: true, phoneBeacon: true, dir: 1, speed: 6.2, spawn: 21, z: 2.4 },
     ],
   },
 ];

@@ -8,14 +8,15 @@ import type { CarryMode } from "../config/radio";
 const TYPE_LABEL: Record<string, string> = { e_bike: "E-bike", e_scooter: "E-scooter", motorcycle: "Motorbike (petrol)", car: "Car (petrol)", bus: "Bus 12", tuk_tuk: "E-tuk-tuk" };
 const LEVEL_CLASS = ["lv0", "lv1", "lv2", "lv3"];
 const LEVELS = ["ignore", "aware", "warn", "urgent"];
+const WALK = { slow: 0.7, normal: 1.0, fast: 1.3 } as const;
 
-interface Row { uid: number; type: string; beacon: boolean; packets: number; rssi: number | null; trueD: number; est: number | null; gps: number | null; level: number; ttr: number | null; passed: boolean }
+interface Row { uid: number; type: string; phone: boolean; beacon: boolean; packets: number; rssi: number | null; trueD: number; est: number | null; gps: number | null; level: number; ttr: number | null; passed: boolean }
 
 function snapshot() {
   const rows: Row[] = engine.vehicles.map((v) => {
     const st = engine.trackFor(v);
     return {
-      uid: v.uid, type: v.type, beacon: v.spec.beacon, packets: v.packets, rssi: v.lastRssi, trueD: v.trueDist,
+      uid: v.uid, type: v.type, phone: !!v.spec.phoneBeacon, beacon: v.spec.beacon, packets: v.packets, rssi: v.lastRssi, trueD: v.trueDist,
       est: st ? st.dist : null, gps: st?.geo_dist ?? null, level: st ? LEVELS.indexOf(st.level) : -1, ttr: st?.ttr ?? null, passed: v.passed,
     };
   });
@@ -53,6 +54,7 @@ export function SidePanel() {
   const open = useUI((s) => s.panelOpen);
   const rmode = useUI((s) => s.receiverMode);
   const carry = useUI((s) => s.carry);
+  const walker = useUI((s) => s.walker);
   const [snap, setSnap] = useState(snapshot);
   useEffect(() => {
     if (!open) return;
@@ -77,13 +79,22 @@ export function SidePanel() {
           <option value="pocket">Phone in pocket</option><option value="hand">Phone in hand</option><option value="wrist">Wristband</option>
         </select>
       </div>
+      <div className="seg-row">
+        <span className="muted">Walker</span>
+        <div className="seg" role="group" aria-label="Walking speed">
+          {(["slow", "normal", "fast"] as const).map((w) => (
+            <button key={w} className={walker === w ? "on" : ""} onClick={() => { engine.walkSpeedMps = WALK[w]; engine.resetReceiver(); store.set({ walker: w }); }}>{w}</button>
+          ))}
+        </div>
+        <span className="muted">warn at {(engine.receiver ? engine.receiver.warnThresholds()[0] : Math.max(6, 7 / WALK[walker] + 2)).toFixed(1)} s</span>
+      </div>
       <h3>Vehicles in range</h3>
       <table className="vt">
         <thead><tr><th>Vehicle</th><th>Pkts</th><th>RSSI</th><th>Est.</th><th>True</th><th>State</th></tr></thead>
         <tbody>
           {snap.rows.filter((r) => r.trueD < 160).sort((a, b) => a.trueD - b.trueD).slice(0, 7).map((r) => (
             <tr key={r.uid} className={r.passed ? "passed" : ""}>
-              <td>{TYPE_LABEL[r.type]}{!r.beacon && <em> no beacon</em>}</td>
+              <td>{TYPE_LABEL[r.type]}{!r.beacon && <em> no beacon</em>}{r.phone && <em> phone beacon</em>}</td>
               <td>{r.beacon ? r.packets : "–"}</td>
               <td>{r.rssi === null ? "–" : r.rssi}</td>
               <td>{fmt(r.gps ?? r.est, 0, " m")}</td>
