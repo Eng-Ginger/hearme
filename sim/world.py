@@ -129,6 +129,9 @@ class Beacon:
             p.gps_valid = True
             p.speed_raw = hp.speed_to_raw(fsp)
             p.heading_raw = hp.heading_to_raw(fhd)
+        if v.stop_at_m is not None:
+            # braking while decelerating, and brake held once stopped
+            p.braking = (t - v.t_start) > v.stop_at_m / v.speed_mps
         if v.vtype == "bus":
             p.route, p.door = v.route, v.door
         return p

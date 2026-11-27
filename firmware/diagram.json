@@ -1,0 +1,34 @@
+{
+  "version": 1,
+  "author": "HearMe",
+  "editor": "wokwi",
+  "parts": [
+    { "type": "board-esp32-c3-devkitm-1", "id": "esp", "top": 0, "left": 0, "attrs": {} },
+    { "type": "wokwi-resistor", "id": "r_motor", "top": 52, "left": 190, "attrs": { "value": "220" } },
+    { "type": "wokwi-led", "id": "motor", "top": -30, "left": 260, "attrs": { "color": "orange", "label": "Motor (GPIO5 PWM)" } },
+    { "type": "wokwi-buzzer", "id": "buzzer", "top": 100, "left": 260, "attrs": { "volume": "0.2" } },
+    { "type": "wokwi-resistor", "id": "r_status", "top": 170, "left": 190, "attrs": { "value": "330" } },
+    { "type": "wokwi-led", "id": "status", "top": 140, "left": 340, "attrs": { "color": "green", "label": "Status (GPIO8)" } },
+    { "type": "wokwi-pushbutton", "id": "btn", "top": 230, "left": 250, "attrs": { "color": "blue", "label": "Ack / mute (GPIO9)" } }
+  ],
+  "connections": [
+    [ "esp:TX", "$serialMonitor:RX", "", [] ],
+    [ "esp:RX", "$serialMonitor:TX", "", [] ],
+
+    [ "esp:5", "r_motor:1", "orange", [] ],
+    [ "r_motor:2", "motor:A", "orange", [] ],
+    [ "motor:C", "esp:GND.1", "black", [] ],
+
+    [ "esp:6", "buzzer:2", "red", [] ],
+    [ "buzzer:1", "esp:GND.1", "black", [] ],
+
+    [ "esp:8", "r_status:1", "green", [] ],
+    [ "r_status:2", "status:A", "green", [] ],
+    [ "status:C", "esp:GND.1", "black", [] ],
+
+    [ "esp:9", "btn:1.l", "blue", [] ],
+    [ "btn:2.l", "esp:GND.1", "black", [] ]
+  ],
+  "serialMonitor": { "display": "terminal", "newline": "lf" },
+  "dependencies": {}
+}

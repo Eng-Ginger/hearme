@@ -103,11 +103,12 @@ export async function startDirector() {
     // 4. Bus stop
     caption("Later, at the bus stop.");
     audio.clearVoices();
+    engine.clearVehicles();
     engine.setPed(STOP_X, KERB_Z, 0);
     engine.resetReceiver();
     await wait(2.6);
     caption("");
-    engine.spawn({ key: "director-bus", type: "bus", beacon: true, dir: 1, speed: 9, spawn: 0, startX: -70, stopAtX: STOP_X - 1, dwell: 14, route: "12" });
+    engine.spawn({ key: "director-bus", type: "bus", beacon: true, dir: 1, speed: 9, spawn: 0, startX: -70, stopAtX: STOP_X - 1, dwell: 30, route: "12" });
     await nextAlert((k) => k === "bus_arriving");
     await until(() => engine.vehicles.some((v) => v.spec.key === "director-bus" && v.phase === "stopped"));
     await wait(2.0);

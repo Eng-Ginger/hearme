@@ -111,11 +111,11 @@ export function World() {
   return (
     <>
       {!night && <Sky sunPosition={sunPos} turbidity={7} rayleigh={1.6} mieCoefficient={0.006} mieDirectionalG={0.85} distance={4000} />}
-      <hemisphereLight args={[night ? "#28324d" : "#ffe2bf", night ? "#0d0f14" : "#7a6248", night ? 0.35 : 0.75]} />
-      <ambientLight intensity={night ? 0.12 : 0.18} />
+      <hemisphereLight args={[night ? "#28324d" : "#ffe2bf", night ? "#0d0f14" : "#7a6248", night ? 0.09 : 0.75]} />
+      <ambientLight intensity={night ? 0.03 : 0.18} />
       <directionalLight
         position={night ? [30, 40, -20] : sunPos}
-        intensity={night ? 0.15 : 2.4}
+        intensity={night ? 0.06 : 2.4}
         color={night ? "#8fa3d6" : "#ffc58a"}
         castShadow
         shadow-mapSize={[2048, 2048]}

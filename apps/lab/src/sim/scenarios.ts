@@ -7,7 +7,7 @@ export const SILENT: ReadonlySet<VType> = new Set(["e_bike", "e_scooter", "tuk_t
 export const ROAD_HALF = 3.5;
 export const KERB_Z = 4.6;          // pedestrian stands here (south kerb)
 export const CROSSING_X = 0;
-export const STOP_X = 20;           // bus stop shelter on the south kerb
+export const STOP_X = 26;           // bus stop shelter on the south kerb
 
 export interface VehicleSpec {
   key: string;            // stable name (director / stats)

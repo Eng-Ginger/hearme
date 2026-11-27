@@ -127,6 +127,9 @@ export class Engine {
   /** Make the next spawn of `key` reuse the first spawn's RNG seed and secret (identical replay). */
   forgetSpawns(key: string) { this.spawnCounts.delete(key); }
 
+  /** Remove all vehicles (director scene change). */
+  clearVehicles() { this.vehicles = []; this.emit({ kind: "roster" }); }
+
   spawn(spec: VehicleSpec): VehicleInst {
     const n = (this.spawnCounts.get(spec.key) ?? 0) + 1;
     this.spawnCounts.set(spec.key, n);
@@ -204,17 +207,18 @@ export class Engine {
     const s = v.spec;
     if (s.stopAtX !== undefined && v.phase !== "leaving") {
       const remaining = (s.stopAtX - v.x) * v.dir;
-      const decel = 1.3;
+      const decel = s.type === "bus" ? 0.67 : 1.3; // buses ease into stops from ~60 m
       if (v.phase === "cruise" && remaining <= (v.v * v.v) / (2 * decel) + 0.5) v.phase = "braking";
       if (v.phase === "braking") {
         v.braking = true;
         v.v = remaining > 0.05 ? Math.min(v.v, Math.sqrt(2 * decel * Math.max(remaining, 0))) : 0;
         if (v.v < 0.05) { v.v = 0; v.phase = "stopped"; v.stoppedAt = this.t; }
       } else if (v.phase === "stopped") {
-        v.braking = false;
+        v.braking = true; // brake held while stopped
         if (this.t - v.stoppedAt >= (s.dwell ?? 8)) v.phase = "leaving";
       }
     } else if (v.phase === "leaving") {
+      v.braking = false;
       v.v = Math.min(s.speed, v.v + 1.0 * h);
     }
     v.x += v.dir * v.v * h;

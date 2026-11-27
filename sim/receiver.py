@@ -340,6 +340,9 @@ class Receiver:
 
         enter = self._level_for(dist, ttr, approaching, moving, 0.0)
         stay = self._level_for(dist, ttr, approaching, moving, cfg.hysteresis_s)
+        if p.type == "bus" and p.braking:
+            # a bus braking (into a stop) is expected, not a threat: cap at aware
+            enter, stay = min(enter, AWARE), min(stay, AWARE)
         if enter > tr.level:
             tr.level = enter
             tr.lower_since = -1.0

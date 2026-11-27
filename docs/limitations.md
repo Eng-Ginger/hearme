@@ -124,3 +124,33 @@ page says plainly what the work shows and what it does not.
 
 If the pilot misses these targets, the parameters, the hardware or the concept change;
 the targets are a starting point for discussion, not a claim.
+
+## 5. Known receiver weaknesses (found by the simulation and code review)
+
+These are open design issues in `receiver-core` (identical in C, TypeScript and Python). They are
+reported here rather than tuned away, so the simulated results reflect the receiver as built.
+
+1. **RSSI-only time-to-reach is optimistic.** As soon as the filtered range rate shows ≥ 0.8 m/s of
+   closing, the receiver divides distance by the vehicle's *advertised ground speed*. Near the
+   sensitivity limit only up-faded packets survive, so distant riders look closer. Result: early,
+   intermittent warnings, including for riders on a parallel street (~12 false alarms per attempt in
+   the Monte Carlo). Fix to evaluate: use the filtered closing speed, require a sustained approach, and
+   prefer GPS geometry whenever it is available.
+2. **`pass_radius_m` = 8 m sits close to GPS error for the far lane.** A rider in the far lane passes
+   about 6.25 m from a pedestrian at the kerb, so GPS noise makes the warning flicker. Continuous
+   ≥ 3 s warning was present for 90.9 % of near-lane riders but only 67.4 % of far-lane riders.
+3. **`warn_ttr_s` = 6 s is shorter than the time to cross two lanes** (5–12 s at 0.6–1.4 m/s). A rider
+   more than 6 s away when the pedestrian steps out is not flagged. A crossing-aware threshold (road
+   width / walking speed + margin) should be evaluated.
+4. **`hysteresis_s` mixes units.** It is a margin in seconds for time-to-reach, in metres for
+   `urgent_dist_m`, and is multiplied by 5 (metres) for `aware_dist_m`.
+5. **Silent re-escalation.** `alert_repeat_s` is per level, so if a track drops and climbs back within
+   4 s, the level rises without a new alert.
+6. **Eviction forgets announcements.** With a very small `max_tracks`, an evicted bus or place is
+   announced again (not an issue at the default of 32).
+7. **Infrastructure announcements use RSSI distance only**, so a stop 20 m away is occasionally
+   announced early because of shadowing (seen in the Lab). A per-beacon calibrated TX power or a
+   longer averaging window would help.
+8. **Bus pulling into a stop.** A bus with its braking flag set is capped at "aware" (it is expected,
+   not a threat). This relies on the bus beacon reporting braking while decelerating and while stopped
+   with the brake held.

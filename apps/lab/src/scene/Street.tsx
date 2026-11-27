@@ -191,7 +191,7 @@ export function Street({ night }: { night: boolean }) {
       </group>
 
       {/* school crossing sign */}
-      <group position={[-2.8, 0, 4.4]}>
+      <group position={[2.8, 0, 4.4]}>
         <mesh position={[0, 1.3, 0]}><cylinderGeometry args={[0.04, 0.04, 2.6, 6]} /><meshStandardMaterial color="#888" /></mesh>
         <mesh position={[0, 2.6, 0.01]} rotation={[0, 0, Math.PI / 4]}>
           <planeGeometry args={[0.75, 0.75]} /><meshBasicMaterial map={xingSign} side={THREE.DoubleSide} toneMapped={false} />

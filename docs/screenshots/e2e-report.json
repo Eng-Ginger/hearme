@@ -1,0 +1,175 @@
+{
+  "url": "http://localhost:5180",
+  "checkpoints": [
+    {
+      "name": "intro",
+      "wallS": 0.835,
+      "simT": 0,
+      "caption": "",
+      "spoken": ""
+    },
+    {
+      "name": "sighted-street",
+      "wallS": 11.713,
+      "simT": 9.28,
+      "caption": "Petrol motorbikes and cars announce themselves. You hear them coming.",
+      "spoken": ""
+    },
+    {
+      "name": "blind-off",
+      "wallS": 18.518,
+      "simT": 17.33,
+      "caption": "HearMe is OFF. Listen.",
+      "spoken": ""
+    },
+    {
+      "name": "heard-nothing",
+      "wallS": 30.167,
+      "simT": 29.32,
+      "caption": "You heard nothing. An electric bike just passed 2.1 m in front of you at 26 km/h.",
+      "spoken": ""
+    },
+    {
+      "name": "hearme-on-alert",
+      "wallS": 43.904,
+      "simT": 42.97,
+      "caption": "",
+      "spoken": "Electric bike, fast, from your left, 6 seconds"
+    },
+    {
+      "name": "warned-caption",
+      "wallS": 50.356,
+      "simT": 49.49,
+      "caption": "HearMe warned you 5.7 s before it passed, from your left. No internet. Nothing installed on the road.",
+      "spoken": "Stop! Electric bike, fast, from your left, 3 seconds"
+    },
+    {
+      "name": "bus-arriving",
+      "wallS": 66.256,
+      "simT": 65.39,
+      "caption": "",
+      "spoken": "Bus 12 arriving, front door on your left"
+    },
+    {
+      "name": "outro",
+      "wallS": 85.969,
+      "simT": 85.06,
+      "caption": "",
+      "spoken": "Bus 12 arriving, front door on your left"
+    }
+  ],
+  "fps": {
+    "director": 60.3,
+    "freeplay": 60.3,
+    "night": 60.3
+  },
+  "errors": [],
+  "directorCompleted": true,
+  "alerts": [
+    {
+      "t": 0.1,
+      "kind": "place",
+      "text": "Crossing: School Xing",
+      "muted": true
+    },
+    {
+      "t": 1.33,
+      "kind": "place",
+      "text": "School zone: Nuaimiya Sch",
+      "muted": true
+    },
+    {
+      "t": 22.73,
+      "kind": "vehicle_warn",
+      "text": "Electric bike, fast, from your left, 6 seconds",
+      "muted": true
+    },
+    {
+      "t": 25.44,
+      "kind": "vehicle_urgent",
+      "text": "Stop! Electric bike, fast, from your left, 3 seconds",
+      "muted": true
+    },
+    {
+      "t": 34.89,
+      "kind": "place",
+      "text": "Crossing: School Xing",
+      "muted": false
+    },
+    {
+      "t": 42.87,
+      "kind": "vehicle_warn",
+      "text": "Electric bike, fast, from your left, 6 seconds",
+      "muted": false
+    },
+    {
+      "t": 45.59,
+      "kind": "vehicle_urgent",
+      "text": "Stop! Electric bike, fast, from your left, 3 seconds",
+      "muted": false
+    },
+    {
+      "t": 53.47,
+      "kind": "place",
+      "text": "Bus stop: Al Jurf Stop",
+      "muted": false
+    },
+    {
+      "t": 55.49,
+      "kind": "place",
+      "text": "Bus stop: Al Jurf Stop",
+      "muted": false
+    },
+    {
+      "t": 62.07,
+      "kind": "vehicle_aware",
+      "text": "Bus nearby, from your left",
+      "muted": false
+    },
+    {
+      "t": 65.34,
+      "kind": "bus_arriving",
+      "text": "Bus 12 arriving, front door on your left",
+      "muted": false
+    }
+  ],
+  "passes": [
+    {
+      "key": "director-moto",
+      "t": 12.16,
+      "passDist": 6.35,
+      "kmh": 39.6,
+      "leadWarn": null,
+      "leadAudible": 1.9987000000011133,
+      "mode": "off"
+    },
+    {
+      "key": "director-car",
+      "t": 16.04,
+      "passDist": 2.85,
+      "kmh": 36,
+      "leadWarn": null,
+      "leadAudible": 0,
+      "mode": "off"
+    },
+    {
+      "key": "director-ebike",
+      "t": 28.39,
+      "passDist": 2.1,
+      "kmh": 25.9,
+      "leadWarn": 5.666999999999877,
+      "leadAudible": null,
+      "mode": "off"
+    },
+    {
+      "key": "director-ebike",
+      "t": 48.54,
+      "passDist": 2.1,
+      "kmh": 25.9,
+      "leadWarn": 5.666699999999366,
+      "leadAudible": null,
+      "mode": "on"
+    }
+  ],
+  "directorWallS": 85.97
+}

@@ -51,7 +51,9 @@ export function PhoneApp({ embedded = false, speakDefault = true, initialLang = 
       for (const a of ev) {
         setAlerts((prev) => [a, ...prev].slice(0, 6));
         setFlash((f) => f + 1);
-        try { navigator.vibrate?.(hapticFor(a) as number[]); } catch { /* not supported */ }
+        // Browsers only allow vibration after the user has tapped the page; the embedded Lab copy never vibrates.
+        const act = (navigator as Navigator & { userActivation?: { hasBeenActive: boolean } }).userActivation;
+        if (!embedded && act?.hasBeenActive && "vibrate" in navigator) navigator.vibrate(hapticFor(a) as number[]);
         if (st.current.speak && a.kind !== "vehicle_aware" && typeof speechSynthesis !== "undefined") {
           const u = new SpeechSynthesisUtterance(st.current.lang === "ar" ? a.text_ar : a.text_en);
           u.lang = st.current.lang === "ar" ? "ar-SA" : "en-US";

@@ -1,0 +1,8 @@
+[wokwi]
+version = 1
+firmware = '.pio/build/wristband_wokwi/firmware.bin'
+elf = '.pio/build/wristband_wokwi/firmware.elf'
+# Serial port of the simulated ESP32-C3 exposed over TCP (RFC2217), so
+#   python tools/trace_to_wokwi.py ../tests/traces/ebike_left_gps.json --send rfc2217://localhost:4000
+# can stream a trace into the wristband in real time.
+rfc2217ServerPort = 4000

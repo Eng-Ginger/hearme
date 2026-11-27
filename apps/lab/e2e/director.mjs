@@ -17,7 +17,8 @@ const browser = await chromium.launch({
   headless: process.env.HEADED ? false : true,
   args: ["--autoplay-policy=no-user-gesture-required", "--ignore-gpu-blocklist", "--enable-gpu", "--use-angle=d3d11", "--enable-unsafe-swiftshader"],
 });
-const page = await browser.newPage({ viewport: { width: 1920, height: 1080 } });
+const ctx = await browser.newContext({ viewport: { width: 1920, height: 1080 } }); // one context: BroadcastChannel is per context
+const page = await ctx.newPage();
 const errors = [];
 page.on("console", (m) => { if (m.type() === "error") errors.push(m.text()); });
 page.on("pageerror", (e) => errors.push("pageerror: " + e.message));
@@ -74,7 +75,8 @@ report.directorWallS = (Date.now() - t0) / 1000;
 await page.keyboard.press("Escape");
 await page.goto(`${URL}/?autostart=1&scenario=school`);
 await page.waitForFunction(() => window.__hearme?.store.get().started === true);
-await page.waitForFunction(() => window.__hearme.engine.alerts.some((a) => a.alert.kind === "vehicle_urgent"), null, { timeout: 60000 });
+await page.evaluate(() => { window.__hearme.camCtl.yaw = -58; });
+await page.waitForFunction(() => window.__hearme.engine.alerts.some((a) => a.alert.kind === "vehicle_warn"), null, { timeout: 60000 });
 await page.waitForTimeout(600);
 report.fps.freeplay = await fps();
 await shot("lab-school-crossing");
@@ -83,21 +85,25 @@ await page.waitForTimeout(2500);
 await shot("lab-blind-mode-panel");
 await page.goto(`${URL}/?autostart=1&scenario=night`);
 await page.waitForFunction(() => window.__hearme?.store.get().started === true);
+await page.evaluate(() => { window.__hearme.camCtl.yaw = -62; });
 await page.waitForTimeout(9000);
 report.fps.night = await fps();
 await shot("lab-night");
 await page.goto(`${URL}/?autostart=1&scenario=busstop`);
 await page.waitForFunction(() => window.__hearme.engine.alerts.some((a) => a.alert.kind === "bus_arriving"), null, { timeout: 60000 });
+await page.evaluate(() => { window.__hearme.camCtl.yaw = -40; });
 await page.waitForTimeout(3000);
 await shot("lab-bus-stop");
 await page.goto(URL);
 await shot("lab-landing");
 
 // ---- 3. Standalone phone page linked over BroadcastChannel
-const phone = await browser.newPage({ viewport: { width: 390, height: 844 } });
+const phone = await ctx.newPage();
+await phone.setViewportSize({ width: 390, height: 844 });
 phone.on("pageerror", (e) => errors.push("phone pageerror: " + e.message));
-await page.goto(`${URL}/?autostart=1&scenario=twobikes`);
 await phone.goto(`${URL}/phone.html`);
+await page.goto(`${URL}/?autostart=1&scenario=twobikes`);
+await page.bringToFront(); // keep the Lab tab animating; the phone is message-driven
 await phone.waitForFunction(() => /Stop!|Electric|E-scooter/.test(document.querySelector(".hm-alert-text")?.textContent ?? ""), null, { timeout: 60000 });
 await phone.waitForTimeout(400);
 await phone.screenshot({ path: resolve(OUT, "phone-standalone.png") });

@@ -255,8 +255,10 @@ export class Receiver {
       const [en, ar] = busText(p.route ?? "", p.door ?? "unknown", side);
       events.push(this.ev(tr, t, "bus_arriving", 0, side, null, en, ar));
     }
-    const enter = this.levelFor(dist, ttr, approaching, moving, 0.0);
-    const stay = this.levelFor(dist, ttr, approaching, moving, cfg.hysteresis_s);
+    let enter = this.levelFor(dist, ttr, approaching, moving, 0.0);
+    let stay = this.levelFor(dist, ttr, approaching, moving, cfg.hysteresis_s);
+    // a bus braking (into a stop) is expected, not a threat: cap at aware
+    if (p.type === "bus" && p.braking) { enter = Math.min(enter, AWARE) as Level; stay = Math.min(stay, AWARE) as Level; }
     if (enter > tr.level) {
       tr.level = enter; tr.lower_since = -1.0;
       if (t - tr.last_alert_t[enter] >= cfg.alert_repeat_s) {

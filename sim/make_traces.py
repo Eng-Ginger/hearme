@@ -95,7 +95,7 @@ def scenarios():
                 config={"use_position": False}, gps=False,
                 description="E-scooter from the right, far lane, no GPS: RSSI-only warning.")
     yield build("bus_arrival", [
-        Vehicle("bus", (-120, -1.75), 90, 9.0, secret=b"bus-12", stop_at_m=104, decel=1.2,
+        Vehicle("bus", (-120, -1.75), 90, 9.0, secret=b"bus-12", stop_at_m=58, decel=0.67,
                 route="12", door="front"),
         Vehicle("bus_stop", (6, -5.5), 90, 0, secret=b"stop-101", name="Al Jurf Stop", short_code=101),
     ], 24, 3, description="Bus 12 decelerates into the stop next to the pedestrian; stop beacon nearby.")
