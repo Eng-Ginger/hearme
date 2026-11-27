@@ -2,7 +2,7 @@
 
 **Electric vehicles are silent. We made them speak.**
 
-**Live demo: <coming soon>** · phone app at `/phone.html` · city dashboard at `/dashboard` · put on headphones, press **D** for the 85 s demo
+**Live demo: https://hearme-lab.vercel.app** · phone app at `/phone.html` · city dashboard at `/dashboard` · put on headphones, press **D** for the 85 s demo
 
 Run it locally (Node 24, see `.nvmrc`):
 

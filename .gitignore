@@ -26,3 +26,6 @@ apps/android-rider-sdk/.gradle/
 *.apk
 *.log
 *.tmp
+
+.vercel
+.env*
