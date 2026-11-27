@@ -1,0 +1,15 @@
+{
+  "name": "@hearme/receiver-pwa",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "main": "src/PhoneApp.tsx",
+  "scripts": { "dev": "vite --port 5174", "build": "vite build" },
+  "dependencies": {
+    "@hearme/protocol": "0.1.0",
+    "@hearme/receiver-core": "0.1.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": { "@vitejs/plugin-react": "^4.3.4", "vite": "^5.4.11" }
+}

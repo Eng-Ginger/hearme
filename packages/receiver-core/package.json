@@ -1,0 +1,10 @@
+{
+  "name": "@hearme/receiver-core",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "dependencies": { "@hearme/protocol": "0.1.0" },
+  "scripts": { "test": "vitest run" }
+}

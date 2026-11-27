@@ -1,0 +1,18 @@
+{
+  "name": "hearme",
+  "private": true,
+  "version": "0.1.0",
+  "workspaces": ["protocol/ts", "packages/receiver-core", "apps/receiver-pwa", "apps/lab"],
+  "scripts": {
+    "dev": "npm run dev -w @hearme/lab",
+    "build": "npm run build -w @hearme/lab",
+    "test": "npm run test -w @hearme/protocol && npm run test -w @hearme/receiver-core",
+    "test:all": "python tests/run_all_tests.py"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "typescript": "^5.6.3",
+    "vitest": "^2.1.8",
+    "tsx": "^4.19.2"
+  }
+}

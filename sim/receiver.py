@@ -264,7 +264,7 @@ class Receiver:
         if cfg.use_position and p.has_position and p.gps_valid and self.pose is not None:
             plat, plon, phead = self.pose
             rx, ry = enu_offset(plat, plon, p.lat_e7 / 1e7, p.lon_e7 / 1e7)
-            dist = math.hypot(rx, ry)
+            dist = math.sqrt(rx * rx + ry * ry)
             bearing = math.degrees(math.atan2(rx, ry))
             rel = bearing - phead
             while rel > 180.0:
@@ -280,7 +280,7 @@ class Receiver:
                 tc = -(rx * vx + ry * vy) / (speed * speed)
                 if tc > 0.0:
                     cx, cy = rx + vx * tc, ry + vy * tc
-                    cpa = math.hypot(cx, cy)
+                    cpa = math.sqrt(cx * cx + cy * cy)
                     if cpa <= cfg.pass_radius_m:
                         approaching = True
                         ttr = tc
