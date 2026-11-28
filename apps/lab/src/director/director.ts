@@ -19,7 +19,7 @@ export function directorRunning() { return runId > 0 && store.get().director; }
 export function stopDirector() {
   runId++;
   speech.cancel();
-  store.set({ director: false, caption: "", titleCard: "none", panelOpen: true, phoneOpen: true, wristOpen: true, paused: false });
+  store.set({ director: false, caption: "", titleCard: "none", panelOpen: window.innerWidth >= 1400, phoneOpen: window.innerWidth >= 1400, wristOpen: true, paused: false });
   camCtl.target = null;
 }
 

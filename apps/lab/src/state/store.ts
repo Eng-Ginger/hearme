@@ -30,9 +30,12 @@ export interface UIState {
   hint: string;
 }
 
+// Narrow windows (< 1400 px) start with the live panel and phone mockup collapsed so the street fills the view.
+const WIDE = typeof window === "undefined" || window.innerWidth >= 1400;
+
 let state: UIState = {
   started: false, view: "sighted", mode: "on", receiverMode: "gps", carry: "pocket", walker: "normal", quality: "auto", autoLevel: "medium", scenarioId: "school",
-  panelOpen: true, phoneOpen: true, wristOpen: true, captionsOn: true, lang: "en", speechOn: true,
+  panelOpen: WIDE, phoneOpen: WIDE, wristOpen: true, captionsOn: true, lang: "en", speechOn: true,
   director: false, caption: "", spoken: "", spokenAt: 0, titleCard: "none", edgeFlash: null, paused: false, hint: "",
 };
 const subs = new Set<() => void>();
